@@ -1,0 +1,209 @@
+<?php
+use App\Core\Helpers;
+use App\Core\Auth;
+$config = require __DIR__ . '/../config.php';
+?>
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-bs-theme="light" data-color-theme="Blue_Theme" data-layout="vertical">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" type="image/png" href="<?php echo Helpers::url('public/images/logos/favicon.png'); ?>?v=<?php echo time(); ?>" />
+  <link rel="stylesheet" href="<?php echo Helpers::url('public/css/styles.css'); ?>" />
+  <title><?php echo htmlspecialchars($title ?? 'TechLab PC'); ?></title>
+</head>
+<body class="link-sidebar">
+  <!-- Preloader -->
+  <div class="preloader">
+    <img src="<?php echo Helpers::url('public/images/logos/favicon.png'); ?>" alt="loader" class="lds-ripple img-fluid" />
+  </div>
+  <div id="main-wrapper">
+    <?php if ($template === 'login') { ?>
+      <div class="position-relative overflow-hidden radial-gradient min-vh-100 w-100">
+        <div class="position-relative z-index-5">
+          <div class="row gx-0">
+            <div class="col-lg-6 col-xl-5 col-xxl-4">
+              <div class="min-vh-100 bg-body row justify-content-center align-items-center p-5">
+                <div class="col-12 auth-card">
+                  <a href="<?php echo Helpers::url('/'); ?>" class="text-nowrap logo-img d-block w-100">
+                    <img src="<?php echo Helpers::url('public/images/logos/logo.png'); ?>" width="90" alt="TechLab PC" />
+                  </a>
+                  <h2 class="mb-2 mt-4 fs-7 fw-bolder">Sign In</h2>
+                  <p class="mb-9">Accedi al pannello di controllo</p>
+                  <?php if (isset($error)) { ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php } ?>
+                  <?php
+                  $viewFile = __DIR__ . '/' . $template . '.php';
+                  if (file_exists($viewFile)) { require $viewFile; }
+                  ?>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 col-xl-7 col-xxl-8 position-relative overflow-hidden bg-dark d-none d-lg-block">
+              <div class="circle-top"></div>
+              <div>
+                <img src="<?php echo Helpers::url('public/images/logos/logo.png'); ?>" class="circle-bottom" alt="Logo-Dark" />
+              </div>
+              <div class="d-lg-flex align-items-center z-index-5 position-relative h-n80">
+                <div class="row justify-content-center w-100">
+                  <div class="col-lg-6">
+                    <h2 class="text-white fs-10 mb-3 lh-sm">
+                      Welcome to <br /> TechLab PC
+                    </h2>
+                    <span class="opacity-75 fs-4 text-white d-block mb-3">
+                      Gestione Laboratorio e Studenti
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <?php } else { ?>
+    <!-- Sidebar Start -->
+    <aside class="left-sidebar with-vertical">
+      <div>
+        <div>
+          <div class="brand-logo d-flex align-items-center">
+          <a href="<?php echo Helpers::url('/'); ?>" class="text-nowrap logo-img">
+            <img src="<?php echo Helpers::url('public/images/logos/logo_v3_scuro.png'); ?>" width="170" alt="TechLab PC" />
+          </a>
+        </div>
+        <nav class="sidebar-nav scroll-sidebar" data-simplebar>
+          <ul class="sidebar-menu" id="sidebarnav">
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:widget-add-line-duotone"></iconify-icon>
+                <span class="hide-menu">Dashboard</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/laptops'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:laptop-minimalistic-line-duotone"></iconify-icon>
+                <span class="hide-menu">PC</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/customers'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:users-group-rounded-line-duotone"></iconify-icon>
+                <span class="hide-menu">Docenti</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/work-groups'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:users-group-two-rounded-line-duotone"></iconify-icon>
+                <span class="hide-menu">Gruppi</span>
+              </a>
+            </li>
+            <?php if (Auth::isAdmin()) { ?>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/payments'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:card-line-duotone"></iconify-icon>
+                <span class="hide-menu">Pagamenti</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/logs'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:history-line-duotone"></iconify-icon>
+                <span class="hide-menu">Logs</span>
+              </a>
+            </li>
+            <?php } ?>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/software'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:inbox-in-line-duotone"></iconify-icon>
+                <span class="hide-menu">Software</span>
+              </a>
+            </li>
+            <?php if (Auth::isAdmin()) { ?>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/students'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:user-circle-line-duotone"></iconify-icon>
+                <span class="hide-menu">Studenti</span>
+              </a>
+            </li>
+            <?php } ?>
+             <?php if (Auth::check()) { ?>
+            <li class="sidebar-item">
+               <a class="sidebar-link" href="<?php echo Helpers::url('/logout'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:logout-3-line-duotone"></iconify-icon>
+                <span class="hide-menu">Logout</span>
+              </a>
+            </li>
+            <?php } else { ?>
+            <li class="sidebar-item">
+               <a class="sidebar-link" href="<?php echo Helpers::url('/login'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:login-3-line-duotone"></iconify-icon>
+                <span class="hide-menu">Login</span>
+              </a>
+            </li>
+            <?php } ?>
+          </ul>
+          </nav>
+        </div>
+      </div>
+    </aside>
+
+    <div class="page-wrapper">
+      <header class="topbar">
+        <div class="with-vertical">
+        <nav class="navbar navbar-expand-lg p-0">
+          <ul class="navbar-nav">
+            <li class="nav-item nav-icon-hover-bg rounded-circle d-flex">
+              <a class="nav-link sidebartoggler" id="headerCollapse" href="javascript:void(0)">
+                <iconify-icon icon="solar:hamburger-menu-line-duotone" class="fs-6"></iconify-icon>
+              </a>
+            </li>
+          </ul>
+          <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
+            <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+              <?php if (Auth::check()) { ?>
+              <li class="nav-item dropdown">
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
+                  <div class="message-body">
+                    <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+                      <i class="ti ti-user fs-6"></i>
+                      <p class="mb-0 fs-3"><?php echo htmlspecialchars(Auth::user()['name']); ?></p>
+                    </a>
+                    <a href="<?php echo Helpers::url('/logout'); ?>" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
+                  </div>
+                </div>
+              </li>
+              <?php } ?>
+            </ul>
+          </div>
+        </nav>
+      </header>
+
+      <div class="body-wrapper">
+        <div class="container-fluid">
+          <?php if (isset($error)) { ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php } ?>
+          <?php
+          $viewFile = __DIR__ . '/' . $template . '.php';
+          if (file_exists($viewFile)) { require $viewFile; } else { echo 'View non trovata'; }
+          ?>
+        </div>
+      </div>
+    </div>
+    <?php } ?>
+  </div>
+  <div class="dark-transparent sidebartoggler"></div>
+  <script src="<?php echo Helpers::url('public/libs/bootstrap/dist/js/bootstrap.bundle.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/simplebar/dist/simplebar.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/js/theme/app.init.js'); ?>?v=<?php echo time(); ?>"></script>
+  <script src="<?php echo Helpers::url('public/js/theme/theme.js'); ?>?v=<?php echo time(); ?>"></script>
+  <script src="<?php echo Helpers::url('public/js/theme/app.min.js'); ?>?v=<?php echo time(); ?>"></script>
+  <script src="<?php echo Helpers::url('public/js/theme/sidebarmenu-default.js'); ?>?v=<?php echo time(); ?>"></script>
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
+  <script src="<?php echo Helpers::url('public/js/highlights/highlight.min.js'); ?>?v=<?php echo time(); ?>"></script>
+  <script>
+  hljs.initHighlightingOnLoad();
+
+
+  document.querySelectorAll("pre.code-view > code").forEach((codeBlock) => {
+    codeBlock.textContent = codeBlock.innerHTML;
+  });
+</script>
+</body>
+</html>
