@@ -21,6 +21,36 @@ use App\Controllers\SoftwareController;
 use App\Controllers\LogsController;
 $router = new Router();
 $pdoBootstrap = DB::conn();
+try {
+  $config = require __DIR__ . '/../app/config.php';
+  $dbName = $config['db']['name'];
+  $col = $pdoBootstrap->prepare("SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME='action_logs' AND COLUMN_NAME='action_type'");
+  $col->execute([$dbName]);
+  $current = $col->fetch()['COLUMN_TYPE'] ?? '';
+  $need = [
+    'assign_laptop_to_customer',
+    'change_laptop_status',
+    'upload_receipt',
+    'assign_laptop_to_group',
+    'create_group','update_group','delete_group',
+    'create_student','update_student','delete_student',
+    'create_customer','update_customer','delete_customer',
+    'create_payment','update_payment','delete_payment',
+    'create_software','update_software','delete_software',
+    'assign_member_to_group','remove_member_from_group',
+    'create_laptop','update_laptop','delete_laptop'
+  ];
+  $exists = [];
+  if (stripos($current, 'enum(') === 0) {
+    $inside = substr($current, 5, -1);
+    foreach (explode(',', $inside) as $v) { $exists[] = trim($v, " '"); }
+  }
+  $union = array_values(array_unique(array_merge($exists, $need)));
+  if ($union !== $exists) {
+    $lit = implode(",", array_map(function($v){ return "'".$v."'"; }, $union));
+    $pdoBootstrap->exec("ALTER TABLE action_logs MODIFY COLUMN action_type ENUM($lit) NOT NULL");
+  }
+} catch (\Throwable $e) {}
 // Ensure superuser admin exists
 $adminExists = (int)$pdoBootstrap->query("SELECT COUNT(*) c FROM students WHERE email='admin'")->fetch()['c'];
 if ($adminExists === 0) {
@@ -52,6 +82,8 @@ $router->get('/', function(){
   Helpers::view('dashboard', ['title'=>'Dashboard','counts'=>$counts]);
 });
 $router->get('/laptops', [LaptopController::class,'index']);
+$router->get('/laptops/export', [LaptopController::class,'export']);
+$router->post('/laptops/import', [LaptopController::class,'import']);
 $router->get('/laptops/create', [LaptopController::class,'createForm']);
 $router->post('/laptops', [LaptopController::class,'store']);
 $router->get('/laptops/{id}', [LaptopController::class,'show']);
@@ -59,6 +91,8 @@ $router->get('/laptops/{id}/edit', [LaptopController::class,'editForm']);
 $router->post('/laptops/{id}/update', [LaptopController::class,'update']);
 $router->post('/laptops/{id}/delete', [LaptopController::class,'delete']);
 $router->get('/customers', [CustomerController::class,'index']);
+$router->get('/customers/export', [CustomerController::class,'export']);
+$router->post('/customers/import', [CustomerController::class,'import']);
 $router->get('/customers/create', [CustomerController::class,'createForm']);
 $router->post('/customers', [CustomerController::class,'store']);
 $router->get('/customers/{id}', [CustomerController::class,'show']);
@@ -66,6 +100,8 @@ $router->get('/customers/{id}/edit', [CustomerController::class,'editForm']);
 $router->post('/customers/{id}/update', [CustomerController::class,'update']);
 $router->post('/customers/{id}/delete', [CustomerController::class,'delete']);
 $router->get('/students', [StudentController::class,'index']);
+$router->get('/students/export', [StudentController::class,'export']);
+$router->post('/students/import', [StudentController::class,'import']);
 $router->get('/students/create', [StudentController::class,'createForm']);
 $router->post('/students', [StudentController::class,'store']);
 $router->get('/students/{id}/edit', [StudentController::class,'editForm']);
@@ -79,9 +115,13 @@ $router->get('/work-groups/{id}/edit', [WorkGroupController::class,'editForm']);
 $router->post('/work-groups/{id}/update', [WorkGroupController::class,'update']);
 $router->post('/work-groups/{id}/add-member', [WorkGroupController::class,'addMember']);
 $router->post('/work-groups/{id}/remove-member', [WorkGroupController::class,'removeMember']);
+$router->get('/work-groups/export', [WorkGroupController::class,'export']);
+$router->post('/work-groups/import', [WorkGroupController::class,'import']);
+$router->post('/work-groups/{id}/delete', [WorkGroupController::class,'delete']);
 $router->get('/payments', [PaymentController::class,'index']);
 $router->get('/payments/create', [PaymentController::class,'createForm']);
 $router->post('/payments', [PaymentController::class,'store']);
+$router->post('/payments/{id}/delete', [PaymentController::class,'delete']);
 $router->get('/logs', [LogsController::class,'index']);
 $router->get('/software', [SoftwareController::class,'index']);
 $router->get('/software/create', [SoftwareController::class,'createForm']);

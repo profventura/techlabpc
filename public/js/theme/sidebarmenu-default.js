@@ -27,13 +27,18 @@ if ((at = "vertical")) {
   function findMatchingElement() {
     var currentUrl = window.location.href;
     var anchors = document.querySelectorAll("#sidebarnav a");
+    var best = null;
+    var bestLen = 0;
     for (var i = 0; i < anchors.length; i++) {
-      if (anchors[i].href === currentUrl) {
-        return anchors[i];
+      var href = anchors[i].href;
+      if (currentUrl === href || currentUrl.indexOf(href) === 0) {
+        if (href.length > bestLen) {
+          best = anchors[i];
+          bestLen = href.length;
+        }
       }
     }
-
-    return null; // Return null if no matching element is found
+    return best;
   }
   var elements = findMatchingElement();
 

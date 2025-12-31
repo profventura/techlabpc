@@ -25,6 +25,7 @@ class SoftwareController {
       'cost'=>trim($_POST['cost'] ?? ''),
     ];
     $id = (new Software())->create($data);
+    (new \App\Models\Log())->addAction('create_software', \App\Core\Auth::user()['id'] ?? null, ['note'=>$data['name'].' '.$data['version']]);
     Helpers::redirect('/software/'.$id.'/edit');
   }
   public function editForm($id) {
@@ -43,12 +44,14 @@ class SoftwareController {
       'cost'=>trim($_POST['cost'] ?? ''),
     ];
     (new Software())->update($id, $data);
+    (new \App\Models\Log())->addAction('update_software', \App\Core\Auth::user()['id'] ?? null, ['note'=>$data['name'].' '.$data['version']]);
     Helpers::redirect('/software');
   }
   public function delete($id) {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
     (new Software())->delete($id);
+    (new \App\Models\Log())->addAction('delete_software', \App\Core\Auth::user()['id'] ?? null, ['note'=>strval($id)]);
     Helpers::redirect('/software');
   }
 }

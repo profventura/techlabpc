@@ -1,17 +1,80 @@
 <h3 class="mb-3">Docenti</h3>
-<div class="d-flex justify-content-end mb-3"><a class="btn btn-primary" href="<?php echo \App\Core\Helpers::url('/customers/create'); ?>">Nuovo Docente</a></div>
+<div class="d-flex justify-content-end mb-3 gap-2">
+  <a class="btn btn-outline-success export-csv" data-count="<?php echo count($customers); ?>" href="<?php echo \App\Core\Helpers::url('/customers/export'); ?>">Export CSV</a>
+  <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#importModal">Import CSV</button>
+  <a class="btn btn-primary" href="<?php echo \App\Core\Helpers::url('/customers/create'); ?>">Nuovo Docente</a>
+</div>
 <div class="table-responsive">
   <table class="table table-striped table-bordered text-nowrap">
-    <thead class="table-light"><tr><th>Nome</th><th>Email</th><th></th></tr></thead>
+    <thead class="table-light"><tr><th>Nome</th><th>Email</th><th>Azioni</th></tr></thead>
     <tbody>
     <?php foreach ($customers as $c) { ?>
       <tr>
         <td><?php echo htmlspecialchars($c['last_name'].' '.$c['first_name']); ?></td>
         <td><?php echo htmlspecialchars($c['email']); ?></td>
-        <td><a class="btn btn-sm btn-outline-primary" href="<?php echo \App\Core\Helpers::url('/customers/'.$c['id']); ?>">Apri</a></td>
+        <td>
+          <a class="btn btn-sm btn-outline-primary" href="<?php echo \App\Core\Helpers::url('/customers/'.$c['id']); ?>">Apri</a>
+          <?php if (\App\Core\Auth::isAdmin()) { ?>
+          <button type="button" class="btn btn-sm btn-outline-danger ms-1" data-bs-toggle="modal" data-bs-target="#deleteCustomerModal" data-id="<?php echo $c['id']; ?>" data-name="<?php echo htmlspecialchars($c['last_name'].' '.$c['first_name']); ?>">Elimina</button>
+          <?php } ?>
+        </td>
       </tr>
     <?php } ?>
     </tbody>
   </table>
 </div>
 
+<div class="modal fade" id="deleteCustomerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="deleteCustomerForm" action="" method="post">
+        <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
+        <div class="modal-header">
+          <h5 class="modal-title">Conferma eliminazione</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Sei sicuro di voler eliminare il docente <span id="delCustomerName"></span>?</p>
+          <p class="text-danger small mb-0">Verranno eliminati anche tutti i pagamenti associati.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="submit" class="btn btn-danger">Elimina</button>
+        </div>
+      </form>
+    </div>
+  </div>
+ </div>
+ <script>
+  document.getElementById('deleteCustomerModal').addEventListener('show.bs.modal', function (e) {
+    var btn = e.relatedTarget;
+    var id = btn.getAttribute('data-id');
+    var name = btn.getAttribute('data-name');
+    document.getElementById('deleteCustomerForm').setAttribute('action', '<?php echo \App\Core\Helpers::url('/customers/'); ?>' + id + '/delete');
+    document.getElementById('delCustomerName').textContent = name || '';
+  });
+ </script>
+<div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="<?php echo \App\Core\Helpers::url('/customers/import'); ?>" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
+        <div class="modal-header">
+          <h5 class="modal-title">Importa Docenti da CSV</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Seleziona file CSV</label>
+            <input type="file" name="csv_file" class="form-control" required accept=".csv">
+          </div>
+          <p class="small text-muted">Il file deve avere le colonne: first_name, last_name, email, notes</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="submit" class="btn btn-primary">Importa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

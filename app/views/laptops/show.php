@@ -6,10 +6,7 @@
           <h5 class="card-title fw-semibold"><?php echo htmlspecialchars($laptop['code'].' - '.$laptop['brand_model']); ?></h5>
           <div>
             <a class="btn btn-warning" href="<?php echo \App\Core\Helpers::url('/laptops/'.$laptop['id'].'/edit'); ?>">Modifica</a>
-            <form method="post" action="<?php echo \App\Core\Helpers::url('/laptops/'.$laptop['id'].'/delete'); ?>" class="d-inline ms-2">
-              <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
-              <button type="submit" class="btn btn-danger" onclick="return confirm('Sei sicuro?');">Elimina</button>
-            </form>
+            <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteModalShow">Elimina</button>
             <a class="btn btn-outline-secondary ms-2" href="<?php echo \App\Core\Helpers::url('/laptops'); ?>">Torna alla lista</a>
           </div>
         </div>
@@ -37,6 +34,27 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="deleteModalShow" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="deleteFormShow" action="<?php echo \App\Core\Helpers::url('/laptops/'.$laptop['id'].'/delete'); ?>" method="post">
+        <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
+        <div class="modal-header">
+          <h5 class="modal-title">Conferma eliminazione</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Sei sicuro di voler eliminare il PC (<?php echo htmlspecialchars($laptop['code']); ?>)?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="submit" class="btn btn-danger">Elimina</button>
+        </div>
+      </form>
+    </div>
+  </div>
+ </div>
 
 <div class="row mt-4">
   <div class="col-md-12">

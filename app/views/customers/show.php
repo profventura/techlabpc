@@ -34,7 +34,6 @@
         </div>
 
         <h5 class="card-title fw-semibold mb-3">Pagamenti bonifico</h5>
-        <p class="mb-3"><strong>Totale office fee dovuta:</strong> €<?php echo number_format($office_total,2,',','.'); ?></p>
         <div class="table-responsive">
           <table class="table table-striped table-bordered text-nowrap">
             <thead class="table-light"><tr><th>Data</th><th>Importo</th><th>Stato</th><th>Contabile</th><th>Riferimento</th></tr></thead>

@@ -82,6 +82,7 @@ class LaptopController {
     $actor = Auth::user()['id'] ?? null;
     $model->addStateHistory($id, $actor, null, $data['status'], null);
     $model->logStatusChange($id, $actor, $data['customer_id'] ?? null, $data['group_id'] ?? null, null);
+    (new \App\Models\Log())->addAction('create_laptop', \App\Core\Auth::user()['id'] ?? null, ['laptop_id'=>$id, 'customer_id'=>$data['customer_id'] ?? null, 'group_id'=>$data['group_id'] ?? null, 'note'=>$data['code']]);
     Helpers::redirect('/laptops/'.$id);
   }
   public function editForm($id) {
@@ -127,13 +128,119 @@ class LaptopController {
       $model->addStateHistory($id, $actor, $prevStatus, $data['status'], null);
       $model->logStatusChange($id, $actor, $existing['customer_id'] ?? null, $existing['group_id'] ?? null, null);
     }
+    (new \App\Models\Log())->addAction('update_laptop', \App\Core\Auth::user()['id'] ?? null, ['laptop_id'=>$id, 'customer_id'=>$data['customer_id'] ?? null, 'group_id'=>$data['group_id'] ?? null, 'note'=>$data['code']]);
     Helpers::redirect('/laptops/'.$id);
   }
   public function delete($id) {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
     (new Laptop())->delete($id);
+    (new \App\Models\Log())->addAction('delete_laptop', \App\Core\Auth::user()['id'] ?? null, ['laptop_id'=>$id]);
+    Helpers::redirect('/laptops');
+  }
+
+  public function export() {
+    Auth::require();
+    $model = new Laptop();
+    $laptops = $model->all();
+    
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=laptops_export_' . date('Y-m-d_H-i-s') . '.csv');
+    
+    $output = fopen('php://output', 'w');
+    
+    // Header row
+    fputcsv($output, [
+      'code', 'brand_model', 'cpu', 'ram', 'storage', 'screen', 
+      'tech_notes', 'scratches', 'physical_condition', 'battery', 
+      'condition_level', 'office_license', 'windows_license', 
+      'other_software_request', 'status', 'customer_id', 'group_id'
+    ]);
+    
+    foreach ($laptops as $laptop) {
+      fputcsv($output, [
+        $laptop['code'],
+        $laptop['brand_model'],
+        $laptop['cpu'],
+        $laptop['ram'],
+        $laptop['storage'],
+        $laptop['screen'],
+        $laptop['tech_notes'],
+        $laptop['scratches'],
+        $laptop['physical_condition'],
+        $laptop['battery'],
+        $laptop['condition_level'],
+        $laptop['office_license'],
+        $laptop['windows_license'],
+        $laptop['other_software_request'],
+        $laptop['status'],
+        $laptop['customer_id'],
+        $laptop['group_id']
+      ]);
+    }
+    
+    fclose($output);
+    exit;
+  }
+
+  public function import() {
+    Auth::require();
+    if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
+    
+    if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
+      $tmpName = $_FILES['csv_file']['tmp_name'];
+      $handle = fopen($tmpName, 'r');
+      
+      if ($handle !== FALSE) {
+        $header = fgetcsv($handle, 1000, ',');
+        $model = new Laptop();
+        $created = 0;
+        $updated = 0;
+        $errors = [];
+        $rownum = 1;
+        
+        while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
+          $rownum++;
+          if (count($data) < 17) { $errors[] = 'Riga '.$rownum.': colonne insufficienti'; continue; }
+
+          $laptopData = [
+            'code' => $data[0],
+            'brand_model' => $data[1],
+            'cpu' => $data[2],
+            'ram' => $data[3],
+            'storage' => $data[4],
+            'screen' => $data[5],
+            'tech_notes' => $data[6],
+            'scratches' => $data[7],
+            'physical_condition' => $data[8],
+            'battery' => $data[9],
+            'condition_level' => $data[10],
+            'office_license' => $data[11] ?: null,
+            'windows_license' => $data[12] ?: null,
+            'other_software_request' => $data[13] ?: null,
+            'status' => $data[14],
+            'customer_id' => is_numeric($data[15]) ? $data[15] : null,
+            'group_id' => is_numeric($data[16]) ? $data[16] : null,
+          ];
+          try {
+            $existing = $model->findByCode($laptopData['code']);
+            if ($existing) {
+              $model->update($existing['id'], $laptopData);
+              $updated++;
+            } else {
+              $model->create($laptopData);
+              $created++;
+            }
+          } catch (\Throwable $e) {
+            $errors[] = 'Riga '.$rownum.': '.$e->getMessage();
+          }
+        }
+        fclose($handle);
+        Helpers::addFlash('success', 'Import PC completato: creati '.$created.', aggiornati '.$updated);
+        if ($errors) { Helpers::addFlash('danger', 'Errori: '.implode(' | ', $errors)); }
+      }
+    }
+    
     Helpers::redirect('/laptops');
   }
 }
-

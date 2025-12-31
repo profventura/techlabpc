@@ -23,4 +23,13 @@ class Helpers {
     move_uploaded_file($_FILES[$fileKey]['tmp_name'], $path);
     return 'public/uploads/'.$safe;
   }
+  public static function addFlash($type, $message) {
+    if (!isset($_SESSION['__flashes'])) { $_SESSION['__flashes'] = []; }
+    $_SESSION['__flashes'][] = ['type'=>$type,'message'=>$message];
+  }
+  public static function getFlashes() {
+    $f = $_SESSION['__flashes'] ?? [];
+    unset($_SESSION['__flashes']);
+    return $f;
+  }
 }

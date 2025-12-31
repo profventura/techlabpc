@@ -31,6 +31,8 @@ class WorkGroupController {
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
     $id = (new WorkGroup())->create(['name'=>trim($_POST['name'] ?? ''),'leader_student_id'=>$_POST['leader_student_id']]);
+    (new WorkGroup())->setLeader($id, $_POST['leader_student_id']);
+    (new \App\Models\Log())->addAction('create_group', \App\Core\Auth::user()['id'] ?? null, ['group_id'=>$id, 'note'=>trim($_POST['name'] ?? '')]);
     Helpers::redirect('/work-groups/'.$id);
   }
   public function editForm($id) {
@@ -45,21 +47,95 @@ class WorkGroupController {
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
     (new WorkGroup())->update($id,['name'=>trim($_POST['name'] ?? ''),'leader_student_id'=>$_POST['leader_student_id']]);
+    (new WorkGroup())->setLeader($id, $_POST['leader_student_id']);
+    (new \App\Models\Log())->addAction('update_group', \App\Core\Auth::user()['id'] ?? null, ['group_id'=>$id, 'note'=>trim($_POST['name'] ?? '')]);
     Helpers::redirect('/work-groups/'.$id);
   }
   public function addMember($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
-    (new WorkGroup())->addMember($id,$_POST['student_id'],$_POST['role'] ?? 'installer');
+    $role = $_POST['role'] ?? 'installer';
+    $wg = new WorkGroup();
+    $existingGroup = $wg->memberGroupOf($_POST['student_id']);
+    if ($existingGroup !== null && $existingGroup !== (int)$id) {
+      \App\Core\Helpers::addFlash('danger', 'Lo studente appartiene già a un altro gruppo');
+      \App\Core\Helpers::redirect('/work-groups/'.$id);
+      return;
+    }
+    if ($role === 'leader') {
+      $wg->setLeader($id, $_POST['student_id']);
+      (new \App\Models\Log())->addAction('assign_member_to_group', \App\Core\Auth::user()['id'] ?? null, ['group_id'=>$id, 'note'=>'leader '.$_POST['student_id']]);
+    } else {
+      $wg->addMember($id, $_POST['student_id'], $role);
+      (new \App\Models\Log())->addAction('assign_member_to_group', \App\Core\Auth::user()['id'] ?? null, ['group_id'=>$id, 'note'=>$role.' '.$_POST['student_id']]);
+    }
     Helpers::redirect('/work-groups/'.$id);
   }
   public function removeMember($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
-    (new WorkGroup())->removeMember($id,$_POST['student_id']);
+    $wg = new WorkGroup();
+    $sid = $_POST['student_id'];
+    if ($wg->isLeader($id, $sid) && $wg->leaderCount($id) <= 1) {
+      \App\Core\Helpers::addFlash('danger', 'Ogni gruppo deve avere un leader');
+      \App\Core\Helpers::redirect('/work-groups/'.$id);
+      return;
+    }
+    $wg->removeMember($id,$sid);
+    (new \App\Models\Log())->addAction('remove_member_from_group', \App\Core\Auth::user()['id'] ?? null, ['group_id'=>$id, 'note'=>strval($sid)]);
     Helpers::redirect('/work-groups/'.$id);
+  }
+  public function export() {
+    Auth::require();
+    if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
+    $groups = (new WorkGroup())->all();
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=work_groups_export_' . date('Y-m-d_H-i-s') . '.csv');
+    $output = fopen('php://output', 'w');
+    fputcsv($output, ['name','leader_student_id']);
+    foreach ($groups as $g) {
+      fputcsv($output, [$g['name'], $g['leader_student_id']]);
+    }
+    fclose($output);
+    (new \App\Models\Log())->addAction('update_group', \App\Core\Auth::user()['id'] ?? null, ['note'=>'export '.count($groups).' items']);
+    exit;
+  }
+  public function import() {
+    Auth::require();
+    if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
+    if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
+    if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
+      $tmpName = $_FILES['csv_file']['tmp_name'];
+      $handle = fopen($tmpName, 'r');
+      if ($handle !== FALSE) {
+        $header = fgetcsv($handle, 1000, ',');
+        $created = 0;
+        $errors = [];
+        $rownum = 1;
+        $wm = new WorkGroup();
+        while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
+          $rownum++;
+          if (count($data) < 2) { $errors[] = 'Riga '.$rownum.': colonne insufficienti'; continue; }
+          $name = trim($data[0]);
+          $leader_id = is_numeric($data[1]) ? (int)$data[1] : null;
+          if ($name === '' || !$leader_id) { $errors[] = 'Riga '.$rownum.': dati non validi'; continue; }
+          try {
+            $id = $wm->create(['name'=>$name,'leader_student_id'=>$leader_id]);
+            $wm->setLeader($id, $leader_id);
+            $created++;
+          } catch (\Throwable $e) {
+            $errors[] = 'Riga '.$rownum.': '.$e->getMessage();
+          }
+        }
+        fclose($handle);
+        \App\Core\Helpers::addFlash('success', 'Import Gruppi completato: creati '.$created);
+        if ($errors) { \App\Core\Helpers::addFlash('danger', 'Errori: '.implode(' | ', $errors)); }
+        (new \App\Models\Log())->addAction('create_group', \App\Core\Auth::user()['id'] ?? null, ['note'=>'import '.$created.' items']);
+      }
+    }
+    Helpers::redirect('/work-groups');
   }
 }
 
