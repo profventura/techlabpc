@@ -175,9 +175,95 @@ $config = require __DIR__ . '/../config.php';
           </div>
         </nav>
       </header>
+      
 
       <div class="body-wrapper">
         <div class="container-fluid">
+          <?php $flashes = \App\Core\Helpers::getFlashes(); ?>
+          <?php if (!empty($flashes)) { ?>
+          <div class="modal fade" id="flashModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Esito operazione</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <?php foreach ($flashes as $f) { ?>
+                  <div class="alert alert-<?php echo $f['type']==='danger'?'danger':'success'; ?> mb-2">
+                    <?php echo htmlspecialchars($f['message']); ?>
+                  </div>
+                  <?php } ?>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <?php } ?>
+          <?php
+            $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+            $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+            if ($scriptDir !== '/' && strpos($uri, $scriptDir) === 0) { $uri = substr($uri, strlen($scriptDir)); }
+            $uri = rtrim($uri, '/') ?: '/';
+            $segments = $uri === '/' ? [] : explode('/', trim($uri, '/'));
+            $labels = [
+              'laptops' => 'PC',
+              'customers' => 'Docenti',
+              'students' => 'Studenti',
+              'work-groups' => 'Gruppi',
+              'payments' => 'Pagamenti',
+              'logs' => 'Logs',
+              'software' => 'Software'
+            ];
+            $seg0 = $segments[0] ?? null;
+            $label0 = $seg0 ? ($labels[$seg0] ?? ucfirst(str_replace('-', ' ', $seg0))) : null;
+            $finalLabel = null;
+            if ($seg0) {
+              if (count($segments) >= 2) {
+                $seg1 = $segments[1];
+                if ($seg1 === 'create') { $finalLabel = 'Nuovo'; }
+                elseif ($seg1 === 'edit' || (isset($segments[2]) && $segments[2] === 'edit')) { $finalLabel = 'Modifica'; }
+                elseif (is_numeric($seg1)) { $finalLabel = (isset($segments[2]) && $segments[2] === 'edit') ? 'Modifica' : 'Dettaglio'; }
+                else { $finalLabel = ucfirst(str_replace('-', ' ', $seg1)); }
+              } else {
+                $finalLabel = 'Lista';
+              }
+            } else {
+              $finalLabel = !empty($title) ? $title : 'Dashboard';
+            }
+            if (!empty($title)) { $finalLabel = $title; }
+          ?>
+          <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb border border-primary px-3 py-2 rounded">
+              <li class="breadcrumb-item">
+                <a href="<?php echo Helpers::url('/'); ?>" class="text-primary d-flex align-items-center">
+                  <iconify-icon icon="solar:home-2-line-duotone" class="fs-4 mt-1"></iconify-icon>
+                </a>
+              </li>
+              <?php if ($seg0) { ?>
+              <li class="breadcrumb-item">
+                <a href="<?php echo Helpers::url('/' . $seg0); ?>" class="text-primary"><?php echo htmlspecialchars($label0); ?></a>
+              </li>
+              <?php } ?>
+            </ol>
+          </nav>
+          <?php if (!empty($flashes)) { ?>
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              var m = document.getElementById('flashModal');
+              if (m) {
+                var inst = new bootstrap.Modal(m);
+                m.addEventListener('hide.bs.modal', function(){
+                  var ae = document.activeElement;
+                  if (ae) ae.blur();
+                });
+                inst.show();
+              }
+            });
+          </script>
+          <?php } ?>
           <?php if (isset($error)) { ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php } ?>
           <?php
           $viewFile = __DIR__ . '/' . $template . '.php';
@@ -200,9 +286,26 @@ $config = require __DIR__ . '/../config.php';
   <script>
   hljs.initHighlightingOnLoad();
 
-
   document.querySelectorAll("pre.code-view > code").forEach((codeBlock) => {
     codeBlock.textContent = codeBlock.innerHTML;
+  });
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('.export-csv');
+    if (!t) return;
+    var cnt = t.getAttribute('data-count') || '';
+    var el = document.createElement('div');
+    el.className = 'modal fade';
+    el.innerHTML = '<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Esportazione CSV</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><div class="alert alert-info mb-0">Esportazione avviata'+(cnt?': '+cnt+' record':'')+'</div></div></div></div>';
+    document.body.appendChild(el);
+    var m = new bootstrap.Modal(el);
+    m.show();
+    setTimeout(function(){
+      var ae = document.activeElement;
+      if (ae) ae.blur();
+      t.focus();
+      el.addEventListener('hidden.bs.modal', function(){ el.remove(); }, { once: true });
+      m.hide();
+    }, 2000);
   });
 </script>
 </body>

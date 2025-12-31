@@ -15,4 +15,15 @@ class Log extends Model {
             ORDER BY l.created_at DESC';
     return $this->pdo->query($sql)->fetchAll();
   }
+  public function addAction($type, $actor_student_id, $payload = []) {
+    $st = $this->pdo->prepare('INSERT INTO action_logs (actor_student_id, action_type, laptop_id, customer_id, group_id, note) VALUES (?,?,?,?,?,?)');
+    $st->execute([
+      $actor_student_id,
+      $type,
+      $payload['laptop_id'] ?? null,
+      $payload['customer_id'] ?? null,
+      $payload['group_id'] ?? null,
+      $payload['note'] ?? null
+    ]);
+  }
 }

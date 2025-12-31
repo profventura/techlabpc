@@ -41,5 +41,34 @@ class WorkGroup extends Model {
     $st = $this->pdo->prepare('DELETE FROM group_members WHERE group_id=? AND student_id=?');
     $st->execute([$group_id,$student_id]);
   }
+  public function setLeader($group_id,$student_id) {
+    try {
+      $this->pdo->beginTransaction();
+      $this->pdo->prepare('UPDATE group_members SET role=\'installer\' WHERE group_id=? AND role=\'leader\'')->execute([$group_id]);
+      $this->pdo->prepare('INSERT INTO group_members (group_id, student_id, role) VALUES (?,?,\'leader\') ON DUPLICATE KEY UPDATE role=\'leader\'')->execute([$group_id,$student_id]);
+      $this->pdo->prepare('UPDATE work_groups SET leader_student_id=? WHERE id=?')->execute([$student_id,$group_id]);
+      $this->pdo->commit();
+    } catch (\Throwable $e) {
+      $this->pdo->rollBack();
+      throw $e;
+    }
+  }
+  public function isLeader($group_id,$student_id) {
+    $st = $this->pdo->prepare('SELECT role FROM group_members WHERE group_id=? AND student_id=?');
+    $st->execute([$group_id,$student_id]);
+    $r = $st->fetch();
+    return $r && $r['role'] === 'leader';
+  }
+  public function leaderCount($group_id) {
+    $st = $this->pdo->prepare('SELECT COUNT(*) c FROM group_members WHERE group_id=? AND role=\'leader\'');
+    $st->execute([$group_id]);
+    return (int)($st->fetch()['c'] ?? 0);
+  }
+  public function memberGroupOf($student_id) {
+    $st = $this->pdo->prepare('SELECT group_id FROM group_members WHERE student_id=? LIMIT 1');
+    $st->execute([$student_id]);
+    $r = $st->fetch();
+    return $r ? (int)$r['group_id'] : null;
+  }
 }
 

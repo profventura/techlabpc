@@ -19,6 +19,11 @@ class Laptop extends Model {
     $st->execute([$id]);
     return $st->fetch();
   }
+  public function findByCode($code) {
+    $st = $this->pdo->prepare('SELECT * FROM laptops WHERE code=?');
+    $st->execute([$code]);
+    return $st->fetch();
+  }
   public function create($data) {
     $st = $this->pdo->prepare('INSERT INTO laptops (code, brand_model, cpu, ram, storage, screen, tech_notes, scratches, physical_condition, battery, condition_level, office_license, windows_license, other_software_request, status, customer_id, group_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
     $st->execute([

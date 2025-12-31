@@ -33,6 +33,21 @@ class PaymentController {
       'status'=>$_POST['status'] ?? 'pending'
     ];
     (new PaymentTransfer())->create($data);
+    (new \App\Models\Log())->addAction('create_payment', \App\Core\Auth::user()['id'] ?? null, ['customer_id'=>$_POST['customer_id'] ?? null, 'note'=>$_POST['amount'].' '.$_POST['paid_at']]);
+    Helpers::redirect('/payments');
+  }
+  public function delete($id) {
+    Auth::require();
+    if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
+    if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
+    $model = new PaymentTransfer();
+    $p = $model->find($id);
+    if (!empty($p['receipt_path']) && strpos($p['receipt_path'], 'public/uploads/') === 0) {
+      $abs = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . $p['receipt_path']);
+      if (is_file($abs)) { @unlink($abs); }
+    }
+    $model->delete($id);
+    (new \App\Models\Log())->addAction('delete_payment', \App\Core\Auth::user()['id'] ?? null, ['note'=>strval($id)]);
     Helpers::redirect('/payments');
   }
 }
