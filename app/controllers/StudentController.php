@@ -16,7 +16,12 @@ class StudentController {
     ];
     $students = (new Student())->all($filters);
     $groups = (new \App\Models\WorkGroup())->all();
-    Helpers::view('students/index', ['title'=>'Studenti','students'=>$students,'filters'=>$filters,'groups'=>$groups]);
+    $pdo = \App\Core\DB::conn();
+    $students_total = (int)$pdo->query('SELECT COUNT(*) c FROM students')->fetch()['c'];
+    $leaders_total = (int)$pdo->query("SELECT COUNT(DISTINCT student_id) c FROM group_members WHERE role='leader'")->fetch()['c'];
+    $installers_total = (int)$pdo->query("SELECT COUNT(DISTINCT student_id) c FROM group_members WHERE role='installer'")->fetch()['c'];
+    $summary = ['students'=>$students_total,'leaders'=>$leaders_total,'installers'=>$installers_total];
+    Helpers::view('students/index', ['title'=>'Studenti','students'=>$students,'filters'=>$filters,'groups'=>$groups,'summary'=>$summary]);
   }
   public function createForm() {
     Auth::require();
@@ -77,24 +82,27 @@ class StudentController {
   public function export() {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
-    
-    $students = (new Student())->all();
+    $pdo = \App\Core\DB::conn();
+    $students = $pdo->query('SELECT * FROM students ORDER BY last_name, first_name')->fetchAll();
     
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename=students_export_' . date('Y-m-d_H-i-s') . '.csv');
     
     $output = fopen('php://output', 'w');
     
-    // Header
-    fputcsv($output, ['first_name', 'last_name', 'email', 'role', 'active']);
+    fputcsv($output, ['id','first_name','last_name','email','password_hash','role','active','created_at','updated_at']);
     
     foreach ($students as $s) {
       fputcsv($output, [
+        $s['id'],
         $s['first_name'],
         $s['last_name'],
         $s['email'],
+        $s['password_hash'],
         $s['role'],
-        $s['active']
+        $s['active'],
+        $s['created_at'] ?? '',
+        $s['updated_at'] ?? ''
       ]);
     }
     
@@ -112,22 +120,26 @@ class StudentController {
       $handle = fopen($tmpName, 'r');
       
       if ($handle !== FALSE) {
-        $header = fgetcsv($handle, 1000, ',');
+        $header = fgetcsv($handle, 2000, ',');
         $model = new Student();
         $created = 0;
         $errors = [];
         $rownum = 1;
+        $cols = [];
+        foreach ($header as $i=>$h) { $cols[strtolower(trim($h))] = $i; }
         while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
           $rownum++;
-          if (count($data) < 5) { $errors[] = 'Riga '.$rownum.': colonne insufficienti'; continue; }
+          $get = function($key, $def=null) use ($cols,$data){ $idx = $cols[$key] ?? null; return $idx!==null ? $data[$idx] : $def; };
           $studentData = [
-            'first_name' => $data[0],
-            'last_name' => $data[1],
-            'email' => $data[2],
-            'role' => $data[3],
-            'active' => $data[4],
-            'password' => '12345678'
+            'first_name' => $get('first_name',''),
+            'last_name' => $get('last_name',''),
+            'email' => $get('email',''),
+            'role' => $get('role','student'),
+            'active' => (int)$get('active',1),
           ];
+          if (($pwd = $get('password', null)) !== null) { $studentData['password'] = $pwd; }
+          elseif (($ph = $get('password_hash', null)) !== null) { $studentData['password_hash'] = $ph; }
+          else { $studentData['password'] = '12345678'; }
           try {
             $model->create($studentData);
             $created++;

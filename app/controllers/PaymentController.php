@@ -10,7 +10,12 @@ class PaymentController {
     Auth::require();
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
     $payments = (new PaymentTransfer())->all();
-    Helpers::view('payments/index', ['title'=>'Pagamenti','payments'=>$payments]);
+    $pdo = \App\Core\DB::conn();
+    $pcs_paid = (int)$pdo->query("SELECT COALESCE(SUM(pcs_paid_count),0) AS t FROM payment_transfers WHERE status='verified'")->fetch()['t'];
+    $customers_cnt = (int)$pdo->query("SELECT COUNT(DISTINCT customer_id) AS c FROM payment_transfers WHERE status='verified'")->fetch()['c'];
+    $pcs_requested = (int)$pdo->query("SELECT COALESCE(SUM(pc_requested_count),0) AS t FROM customers")->fetch()['t'];
+    $summary = ['pcs_paid'=>$pcs_paid,'customers'=>$customers_cnt,'pcs_requested'=>$pcs_requested];
+    Helpers::view('payments/index', ['title'=>'Pagamenti','payments'=>$payments,'summary'=>$summary]);
   }
   public function createForm() {
     Auth::require();

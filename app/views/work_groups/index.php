@@ -1,8 +1,34 @@
 <h3 class="mb-3">Gruppi</h3>
+<div class="row mb-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-2">Numero gruppi</h5>
+        <div class="fs-5"><?php echo (int)($summary['groups'] ?? 0); ?></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-2">Numero studenti</h5>
+        <div class="fs-5"><?php echo (int)($summary['students'] ?? 0); ?></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-2">Numero PC assegnati</h5>
+        <div class="fs-5"><?php echo (int)($summary['laptops'] ?? 0); ?></div>
+      </div>
+    </div>
+  </div>
+</div>
 <?php if (\App\Core\Auth::isAdmin()) { ?>
 <div class="d-flex justify-content-end mb-3 gap-2">
-  <a class="btn btn-outline-success export-csv" data-count="<?php echo count($groups); ?>" href="<?php echo \App\Core\Helpers::url('/work-groups/export'); ?>">Export CSV</a>
-  <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#importWgModal">Import CSV</button>
+  <a class="btn btn-outline-success export-csv" data-count="<?php echo count($groups); ?>" href="<?php echo \App\Core\Helpers::url('/work-groups/export'); ?>">Esporta CSV</a>
+  <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#importWgModal">Importa CSV</button>
   <a class="btn btn-primary" href="<?php echo \App\Core\Helpers::url('/work-groups/create'); ?>">Nuovo Gruppo</a>
 </div>
 <?php } ?>
@@ -40,13 +66,23 @@
       ],
       dom: 'Bfrtip',
       buttons: [
-        { extend: 'copy', className: 'btn btn-outline-primary' },
-        { extend: 'csv', className: 'btn btn-outline-primary' },
-        { extend: 'excel', className: 'btn btn-outline-primary' },
-        { extend: 'pdf', className: 'btn btn-outline-primary' },
-        { extend: 'print', className: 'btn btn-outline-primary' },
-        { extend: 'colvis', className: 'btn btn-outline-primary' }
-      ]
+        { extend: 'copy', text: 'Copia', className: 'btn btn-outline-primary' },
+        { extend: 'csv', text: 'CSV', className: 'btn btn-outline-primary' },
+        { extend: 'excel', text: 'Excel', className: 'btn btn-outline-primary' },
+        { extend: 'pdf', text: 'PDF', className: 'btn btn-outline-primary' },
+        { extend: 'print', text: 'Stampa', className: 'btn btn-outline-primary' },
+        { extend: 'colvis', text: 'Colonne', className: 'btn btn-outline-primary' }
+      ],
+      language: {
+        search: 'Cerca:',
+        lengthMenu: 'Mostra _MENU_ righe',
+        info: 'Mostra da _START_ a _END_ di _TOTAL_',
+        infoEmpty: 'Nessun record',
+        zeroRecords: 'Nessun risultato trovato',
+        loadingRecords: 'Caricamento...',
+        processing: 'Elaborazione...',
+        paginate: { first: 'Prima', last: 'Ultima', next: 'Successiva', previous: 'Precedente' }
+      }
     });
     var t = document.getElementById('workGroupsTable');
     var wid = t.id + '_search';
@@ -72,10 +108,10 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Seleziona file CSV</label>
-            <input type="file" name="csv_file" class="form-control" required accept=".csv">
+            <label class="form-label" for="work_groups_csv_file">Seleziona file CSV</label>
+            <input type="file" id="work_groups_csv_file" name="csv_file" class="form-control" required accept=".csv">
           </div>
-          <p class="small text-muted">Il file deve avere le colonne: name, leader_student_id</p>
+          <p class="small text-muted">Il file deve avere le colonne: name, leader_student_id. Opzionali: id, created_at, updated_at</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>

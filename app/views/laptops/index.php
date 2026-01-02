@@ -1,8 +1,8 @@
-<h3 class="mb-3">PC</h3>
+<h3 class="mb-3">Computer</h3>
 <div class="d-flex justify-content-end mb-3 gap-2">
-  <a class="btn btn-outline-success export-csv" data-count="<?php echo count($laptops); ?>" href="<?php echo \App\Core\Helpers::url('/laptops/export'); ?>">Export CSV</a>
-  <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#importModal">Import CSV</button>
-  <a class="btn btn-primary" href="<?php echo \App\Core\Helpers::url('/laptops/create'); ?>">Nuovo PC</a>
+  <a class="btn btn-outline-success export-csv" data-count="<?php echo count($laptops); ?>" href="<?php echo \App\Core\Helpers::url('/laptops/export'); ?>">Esporta CSV</a>
+  <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#importModal">Importa CSV</button>
+  <a class="btn btn-primary" href="<?php echo \App\Core\Helpers::url('/laptops/create'); ?>">Nuovo Computer</a>
 </div>
 <form method="get" class="row g-2 align-items-center mb-3">
   <div class="col-auto">
@@ -68,20 +68,35 @@
       ],
       dom: 'Bfrtip',
       buttons: [
-        { extend: 'copy', className: 'btn btn-outline-primary' },
-        { extend: 'csv', className: 'btn btn-outline-primary' },
-        { extend: 'excel', className: 'btn btn-outline-primary' },
-        { extend: 'pdf', className: 'btn btn-outline-primary' },
-        { extend: 'print', className: 'btn btn-outline-primary' },
-        { extend: 'colvis', className: 'btn btn-outline-primary' }
-      ]
+        { extend: 'copy', text: 'Copia', className: 'btn btn-outline-primary' },
+        { extend: 'csv', text: 'CSV', className: 'btn btn-outline-primary' },
+        { extend: 'excel', text: 'Excel', className: 'btn btn-outline-primary' },
+        { extend: 'pdf', text: 'PDF', className: 'btn btn-outline-primary' },
+        { extend: 'print', text: 'Stampa', className: 'btn btn-outline-primary' },
+        { extend: 'colvis', text: 'Colonne', className: 'btn btn-outline-primary' }
+      ],
+      language: {
+        search: 'Cerca:',
+        lengthMenu: 'Mostra _MENU_ righe',
+        info: 'Mostra da _START_ a _END_ di _TOTAL_',
+        infoEmpty: 'Nessun record',
+        zeroRecords: 'Nessun risultato trovato',
+        loadingRecords: 'Caricamento...',
+        processing: 'Elaborazione...',
+        paginate: {
+          first: 'Prima',
+          last: 'Ultima',
+          next: 'Successiva',
+          previous: 'Precedente'
+        }
+      }
     });
     var t = document.getElementById('laptopsTable');
     var wid = t.id + '_search';
     var wrap = $(t).closest('.dataTables_wrapper');
     var lbl = wrap.find('.dataTables_filter label');
     var inp = lbl.find('input');
-    inp.attr({ id: wid, name: wid, 'aria-label': 'Cerca PC' });
+    inp.attr({ id: wid, name: wid, 'aria-label': 'Cerca Computer' });
     lbl.attr('for', wid);
     var lsel = wrap.find('.dataTables_length select');
     var lid = t.id + '_length';
@@ -95,15 +110,15 @@
       <form action="<?php echo \App\Core\Helpers::url('/laptops/import'); ?>" method="post" enctype="multipart/form-data">
         <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
         <div class="modal-header">
-          <h5 class="modal-title">Importa PC da CSV</h5>
+          <h5 class="modal-title">Importa Computer da CSV</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Seleziona file CSV</label>
-            <input type="file" name="csv_file" class="form-control" required accept=".csv">
+            <label class="form-label" for="laptops_csv_file">Seleziona file CSV</label>
+            <input type="file" id="laptops_csv_file" name="csv_file" class="form-control" required accept=".csv">
           </div>
-          <p class="small text-muted">Il file deve avere le colonne: code, brand_model, cpu, ram, storage, screen, tech_notes, scratches, physical_condition, battery, condition_level, office_license, windows_license, other_software_request, status, customer_id, group_id</p>
+          <p class="small text-muted">Il file deve avere le colonne: code, brand_model, cpu, ram, storage, screen, tech_notes, scratches, physical_condition, battery, condition_level, office_license, windows_license, other_software_request, status, customer_id, group_id, last_operator_student_id. Opzionali: id, created_at, updated_at</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>

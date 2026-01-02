@@ -1,4 +1,30 @@
 <h3 class="mb-3">Pagamenti bonifico</h3>
+<div class="row mb-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-2">Numero docenti</h5>
+        <div class="fs-5"><?php echo (int)($summary['customers'] ?? 0); ?></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-2">Numero PC richiesti</h5>
+        <div class="fs-5"><?php echo (int)($summary['pcs_requested'] ?? 0); ?></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-2">Numero PC pagati</h5>
+        <div class="fs-5"><?php echo (int)($summary['pcs_paid'] ?? 0); ?></div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="d-flex justify-content-end mb-3"><a class="btn btn-primary" href="<?php echo \App\Core\Helpers::url('/payments/create'); ?>">Nuovo Bonifico</a></div>
 <div class="table-responsive">
   <table id="paymentsTable" class="table table-striped table-bordered text-nowrap">
@@ -41,13 +67,23 @@
       ],
       dom: 'Bfrtip',
       buttons: [
-        { extend: 'copy', className: 'btn btn-outline-primary' },
-        { extend: 'csv', className: 'btn btn-outline-primary' },
-        { extend: 'excel', className: 'btn btn-outline-primary' },
-        { extend: 'pdf', className: 'btn btn-outline-primary' },
-        { extend: 'print', className: 'btn btn-outline-primary' },
-        { extend: 'colvis', className: 'btn btn-outline-primary' }
-      ]
+        { extend: 'copy', text: 'Copia', className: 'btn btn-outline-primary' },
+        { extend: 'csv', text: 'CSV', className: 'btn btn-outline-primary' },
+        { extend: 'excel', text: 'Excel', className: 'btn btn-outline-primary' },
+        { extend: 'pdf', text: 'PDF', className: 'btn btn-outline-primary' },
+        { extend: 'print', text: 'Stampa', className: 'btn btn-outline-primary' },
+        { extend: 'colvis', text: 'Colonne', className: 'btn btn-outline-primary' }
+      ],
+      language: {
+        search: 'Cerca:',
+        lengthMenu: 'Mostra _MENU_ righe',
+        info: 'Mostra da _START_ a _END_ di _TOTAL_',
+        infoEmpty: 'Nessun record',
+        zeroRecords: 'Nessun risultato trovato',
+        loadingRecords: 'Caricamento...',
+        processing: 'Elaborazione...',
+        paginate: { first: 'Prima', last: 'Ultima', next: 'Successiva', previous: 'Precedente' }
+      }
     });
     var t = document.getElementById('paymentsTable');
     var wid = t.id + '_search';
