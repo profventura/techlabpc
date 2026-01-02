@@ -25,8 +25,8 @@
             <input type="text" class="form-control" name="reference" value="<?php echo htmlspecialchars($payment['reference']??''); ?>">
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label">Contabile</label>
-            <input type="file" class="form-control" name="receipt" accept=".pdf,.jpg,.png">
+            <label class="form-label" for="receipt">Contabile</label>
+            <input type="file" id="receipt" class="form-control" name="receipt" accept=".pdf,.jpg,.png">
             <?php if (!empty($payment['receipt_path'])) { ?>
               <div class="form-text">Contabile attuale: <a href="<?php echo \App\Core\Helpers::url($payment['receipt_path']); ?>" target="_blank">Apri</a></div>
             <?php } ?>

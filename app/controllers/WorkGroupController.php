@@ -10,7 +10,12 @@ class WorkGroupController {
   public function index() {
     Auth::require();
     $groups = (new WorkGroup())->all();
-    Helpers::view('work_groups/index', ['title'=>'Gruppi','groups'=>$groups]);
+    $pdo = \App\Core\DB::conn();
+    $groups_total = count($groups);
+    $students_total = (int)$pdo->query('SELECT COUNT(*) c FROM group_members')->fetch()['c'];
+    $laptops_total = (int)$pdo->query('SELECT COUNT(*) c FROM laptops WHERE group_id IS NOT NULL')->fetch()['c'];
+    $summary = ['groups'=>$groups_total,'students'=>$students_total,'laptops'=>$laptops_total];
+    Helpers::view('work_groups/index', ['title'=>'Gruppi','groups'=>$groups,'summary'=>$summary]);
   }
   public function show($id) {
     Auth::require();
@@ -23,7 +28,7 @@ class WorkGroupController {
   public function createForm() {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
-    $students = (new Student())->all();
+    $students = (new Student())->withoutGroup();
     Helpers::view('work_groups/form', ['title'=>'Nuovo Gruppo','group'=>null,'students'=>$students]);
   }
   public function store() {
@@ -90,13 +95,14 @@ class WorkGroupController {
   public function export() {
     Auth::require();
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
-    $groups = (new WorkGroup())->all();
+    $pdo = \App\Core\DB::conn();
+    $groups = $pdo->query('SELECT * FROM work_groups ORDER BY name')->fetchAll();
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename=work_groups_export_' . date('Y-m-d_H-i-s') . '.csv');
     $output = fopen('php://output', 'w');
-    fputcsv($output, ['name','leader_student_id']);
+    fputcsv($output, ['id','name','leader_student_id','created_at','updated_at']);
     foreach ($groups as $g) {
-      fputcsv($output, [$g['name'], $g['leader_student_id']]);
+      fputcsv($output, [$g['id'], $g['name'], $g['leader_student_id'], $g['created_at'] ?? '', $g['updated_at'] ?? '']);
     }
     fclose($output);
     (new \App\Models\Log())->addAction('update_group', \App\Core\Auth::user()['id'] ?? null, ['note'=>'export '.count($groups).' items']);
@@ -110,16 +116,18 @@ class WorkGroupController {
       $tmpName = $_FILES['csv_file']['tmp_name'];
       $handle = fopen($tmpName, 'r');
       if ($handle !== FALSE) {
-        $header = fgetcsv($handle, 1000, ',');
+        $header = fgetcsv($handle, 2000, ',');
         $created = 0;
         $errors = [];
         $rownum = 1;
         $wm = new WorkGroup();
+        $cols = [];
+        foreach ($header as $i=>$h) { $cols[strtolower(trim($h))] = $i; }
         while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
           $rownum++;
-          if (count($data) < 2) { $errors[] = 'Riga '.$rownum.': colonne insufficienti'; continue; }
-          $name = trim($data[0]);
-          $leader_id = is_numeric($data[1]) ? (int)$data[1] : null;
+          $get = function($key, $def=null) use ($cols,$data){ $idx = $cols[$key] ?? null; return $idx!==null ? $data[$idx] : $def; };
+          $name = trim($get('name',''));
+          $leader_id = is_numeric($get('leader_student_id',null)) ? (int)$get('leader_student_id',null) : null;
           if ($name === '' || !$leader_id) { $errors[] = 'Riga '.$rownum.': dati non validi'; continue; }
           try {
             $id = $wm->create(['name'=>$name,'leader_student_id'=>$leader_id]);

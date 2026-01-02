@@ -21,7 +21,19 @@
               <table class="table table-striped table-bordered text-nowrap">
                 <thead class="table-light"><tr><th>Nome</th><th>Ruolo</th><?php if (\App\Core\Auth::isAdmin()) { ?><th>Azioni</th><?php } ?></tr></thead>
                 <tbody>
-                <?php foreach ($members as $m) { ?>
+                <?php $leaderId = (int)$group['leader_student_id']; ?>
+                <?php foreach ($members as $m) { if ((int)$m['student_id'] === $leaderId) { ?>
+                  <tr>
+                    <td><strong><?php echo htmlspecialchars($m['last_name'].' '.$m['first_name']); ?></strong></td>
+                    <td><strong><?php echo htmlspecialchars($m['role']); ?></strong></td>
+                    <?php if (\App\Core\Auth::isAdmin()) { ?>
+                    <td>
+                      <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#removeMemberModal" data-student="<?php echo $m['student_id']; ?>" data-name="<?php echo htmlspecialchars($m['last_name'].' '.$m['first_name']); ?>">Elimina</button>
+                    </td>
+                    <?php } ?>
+                  </tr>
+                <?php break; } } ?>
+                <?php foreach ($members as $m) { if ((int)$m['student_id'] !== $leaderId) { ?>
                   <tr>
                     <td><?php echo htmlspecialchars($m['last_name'].' '.$m['first_name']); ?></td>
                     <td><?php echo htmlspecialchars($m['role']); ?></td>
@@ -31,7 +43,7 @@
                     </td>
                     <?php } ?>
                   </tr>
-                <?php } ?>
+                <?php } } ?>
                 </tbody>
               </table>
             </div>

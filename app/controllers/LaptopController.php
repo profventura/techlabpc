@@ -172,14 +172,16 @@ class LaptopController {
     
     // Header row
     fputcsv($output, [
-      'code', 'brand_model', 'cpu', 'ram', 'storage', 'screen', 
-      'tech_notes', 'scratches', 'physical_condition', 'battery', 
-      'condition_level', 'office_license', 'windows_license', 
-      'other_software_request', 'status', 'customer_id', 'group_id'
+      'id','code','brand_model','cpu','ram','storage','screen',
+      'tech_notes','scratches','physical_condition','battery',
+      'condition_level','office_license','windows_license',
+      'other_software_request','status','customer_id','group_id',
+      'last_operator_student_id','created_at','updated_at'
     ]);
     
     foreach ($laptops as $laptop) {
       fputcsv($output, [
+        $laptop['id'],
         $laptop['code'],
         $laptop['brand_model'],
         $laptop['cpu'],
@@ -196,7 +198,10 @@ class LaptopController {
         $laptop['other_software_request'],
         $laptop['status'],
         $laptop['customer_id'],
-        $laptop['group_id']
+        $laptop['group_id'],
+        $laptop['last_operator_student_id'],
+        $laptop['created_at'] ?? '',
+        $laptop['updated_at'] ?? ''
       ]);
     }
     
@@ -213,7 +218,9 @@ class LaptopController {
       $handle = fopen($tmpName, 'r');
       
       if ($handle !== FALSE) {
-        $header = fgetcsv($handle, 1000, ',');
+        $header = fgetcsv($handle, 2000, ',');
+        $cols = [];
+        foreach ($header as $i=>$h) { $cols[strtolower(trim($h))] = $i; }
         $model = new Laptop();
         $created = 0;
         $updated = 0;
@@ -222,26 +229,26 @@ class LaptopController {
         
         while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
           $rownum++;
-          if (count($data) < 17) { $errors[] = 'Riga '.$rownum.': colonne insufficienti'; continue; }
-
+          $get = function($key, $def=null) use ($cols,$data){ $idx = $cols[$key] ?? null; return $idx!==null ? $data[$idx] : $def; };
           $laptopData = [
-            'code' => $data[0],
-            'brand_model' => $data[1],
-            'cpu' => $data[2],
-            'ram' => $data[3],
-            'storage' => $data[4],
-            'screen' => $data[5],
-            'tech_notes' => $data[6],
-            'scratches' => $data[7],
-            'physical_condition' => $data[8],
-            'battery' => $data[9],
-            'condition_level' => $data[10],
-            'office_license' => $data[11] ?: null,
-            'windows_license' => $data[12] ?: null,
-            'other_software_request' => $data[13] ?: null,
-            'status' => $data[14],
-            'customer_id' => is_numeric($data[15]) ? $data[15] : null,
-            'group_id' => is_numeric($data[16]) ? $data[16] : null,
+            'code' => $get('code',''),
+            'brand_model' => $get('brand_model',''),
+            'cpu' => $get('cpu',''),
+            'ram' => $get('ram',''),
+            'storage' => $get('storage',''),
+            'screen' => $get('screen',''),
+            'tech_notes' => $get('tech_notes',''),
+            'scratches' => $get('scratches',''),
+            'physical_condition' => $get('physical_condition',''),
+            'battery' => $get('battery',''),
+            'condition_level' => $get('condition_level','good'),
+            'office_license' => ($v=$get('office_license',null))!=='' ? $v : null,
+            'windows_license' => ($v=$get('windows_license',null))!=='' ? $v : null,
+            'other_software_request' => ($v=$get('other_software_request',null))!=='' ? $v : null,
+            'status' => $get('status','in_progress'),
+            'customer_id' => is_numeric($get('customer_id',null)) ? (int)$get('customer_id',null) : null,
+            'group_id' => is_numeric($get('group_id',null)) ? (int)$get('group_id',null) : null,
+            'last_operator_student_id' => is_numeric($get('last_operator_student_id',null)) ? (int)$get('last_operator_student_id',null) : null,
           ];
           try {
             $existing = $model->findByCode($laptopData['code']);

@@ -8,7 +8,13 @@ class CustomerController {
   public function index() {
     Auth::require();
     $customers = (new Customer())->all();
-    Helpers::view('customers/index', ['title'=>'Docenti','customers'=>$customers]);
+    $pdo = \App\Core\DB::conn();
+    $docenti = (int)$pdo->query('SELECT COUNT(*) c FROM customers')->fetch()['c'];
+    $pc_richiesti = (int)$pdo->query('SELECT COALESCE(SUM(pc_requested_count),0) s FROM customers')->fetch()['s'];
+    $pc_assegnati = (int)$pdo->query('SELECT COUNT(*) c FROM laptops WHERE customer_id IS NOT NULL')->fetch()['c'];
+    $pc_pagati = (int)$pdo->query("SELECT COALESCE(SUM(pcs_paid_count),0) s FROM payment_transfers WHERE status='verified'")->fetch()['s'];
+    $summary = ['docenti'=>$docenti,'pc_richiesti'=>$pc_richiesti,'pc_assegnati'=>$pc_assegnati,'pc_pagati'=>$pc_pagati];
+    Helpers::view('customers/index', ['title'=>'Docenti','customers'=>$customers,'summary'=>$summary]);
   }
   public function show($id) {
     Auth::require();
@@ -54,22 +60,26 @@ class CustomerController {
 
   public function export() {
     Auth::require();
-    $customers = (new Customer())->all();
+    $pdo = \App\Core\DB::conn();
+    $customers = $pdo->query('SELECT * FROM customers ORDER BY last_name, first_name')->fetchAll();
     
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename=customers_export_' . date('Y-m-d_H-i-s') . '.csv');
     
     $output = fopen('php://output', 'w');
     
-    // Header
-    fputcsv($output, ['first_name', 'last_name', 'email', 'notes']);
+    fputcsv($output, ['id','first_name','last_name','email','notes','pc_requested_count','created_at','updated_at']);
     
     foreach ($customers as $c) {
       fputcsv($output, [
+        $c['id'],
         $c['first_name'],
         $c['last_name'],
         $c['email'],
-        $c['notes']
+        $c['notes'],
+        (int)($c['pc_requested_count'] ?? 0),
+        $c['created_at'] ?? '',
+        $c['updated_at'] ?? ''
       ]);
     }
     
@@ -86,19 +96,22 @@ class CustomerController {
       $handle = fopen($tmpName, 'r');
       
       if ($handle !== FALSE) {
-        $header = fgetcsv($handle, 1000, ',');
+        $header = fgetcsv($handle, 2000, ',');
         $model = new Customer();
         $created = 0;
         $errors = [];
         $rownum = 1;
+        $cols = [];
+        foreach ($header as $i=>$h) { $cols[strtolower(trim($h))] = $i; }
         while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
           $rownum++;
-          if (count($data) < 4) { $errors[] = 'Riga '.$rownum.': colonne insufficienti'; continue; }
+          $get = function($key, $def=null) use ($cols,$data){ $idx = $cols[$key] ?? null; return $idx!==null ? $data[$idx] : $def; };
           $customerData = [
-            'first_name' => $data[0],
-            'last_name' => $data[1],
-            'email' => $data[2],
-            'notes' => $data[3]
+            'first_name' => $get('first_name',''),
+            'last_name' => $get('last_name',''),
+            'email' => $get('email',''),
+            'notes' => $get('notes',''),
+            'pc_requested_count' => is_numeric($get('pc_requested_count',0)) ? (int)$get('pc_requested_count',0) : 0
           ];
           try {
             $model->create($customerData);
