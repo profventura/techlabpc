@@ -88,4 +88,3 @@
     document.getElementById('deletePaymentForm').setAttribute('action', '<?php echo \App\Core\Helpers::url('/payments/'); ?>' + id + '/delete');
   });
 </script>
-
