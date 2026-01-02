@@ -11,9 +11,23 @@ class Auth {
     $stmt->execute([$email]);
     $user = $stmt->fetch();
     $ok = $user && password_verify($password, $user['password_hash']);
-    self::logAccess($ok ? 'login_ok' : 'login_ko', $user ? $user['id'] : null);
-    if ($ok) { $_SESSION['user'] = ['id'=>$user['id'],'email'=>$user['email'],'role'=>$user['role'],'name'=>$user['first_name'].' '.$user['last_name']]; return true; }
-    return false;
+    if (!$ok) {
+      self::logAccess('login_ko', $user ? $user['id'] : null);
+      return false;
+    }
+    $allowed = ($user['role'] === 'admin');
+    if (!$allowed) {
+      $chk = $pdo->prepare("SELECT COUNT(*) c FROM group_members WHERE student_id=? AND role='leader'");
+      $chk->execute([$user['id']]);
+      $allowed = ((int)$chk->fetch()['c']) > 0;
+    }
+    if (!$allowed) {
+      self::logAccess('login_ko', $user['id']);
+      return 'denied_leader_only';
+    }
+    self::logAccess('login_ok', $user['id']);
+    $_SESSION['user'] = ['id'=>$user['id'],'email'=>$user['email'],'role'=>$user['role'],'name'=>$user['first_name'].' '.$user['last_name']];
+    return true;
   }
   public static function logout() {
     $u = self::user();

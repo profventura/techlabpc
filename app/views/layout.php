@@ -81,19 +81,33 @@ $config = require __DIR__ . '/../config.php';
             <li class="sidebar-item">
               <a class="sidebar-link" href="<?php echo Helpers::url('/laptops'); ?>" aria-expanded="false">
                 <iconify-icon icon="solar:laptop-minimalistic-line-duotone"></iconify-icon>
-                <span class="hide-menu">PC</span>
+                <span class="hide-menu">Computer</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/software'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:inbox-in-line-duotone"></iconify-icon>
+                <span class="hide-menu">Software</span>
+              </a>
+            </li>
+            <?php if (Auth::isAdmin()) { ?>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/students'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:user-circle-line-duotone"></iconify-icon>
+                <span class="hide-menu">Studenti</span>
+              </a>
+            </li>
+            <?php } ?>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="<?php echo Helpers::url('/work-groups'); ?>" aria-expanded="false">
+                <iconify-icon icon="solar:users-group-two-rounded-line-duotone"></iconify-icon>
+                <span class="hide-menu">Gruppi</span>
               </a>
             </li>
             <li class="sidebar-item">
               <a class="sidebar-link" href="<?php echo Helpers::url('/customers'); ?>" aria-expanded="false">
                 <iconify-icon icon="solar:users-group-rounded-line-duotone"></iconify-icon>
                 <span class="hide-menu">Docenti</span>
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a class="sidebar-link" href="<?php echo Helpers::url('/work-groups'); ?>" aria-expanded="false">
-                <iconify-icon icon="solar:users-group-two-rounded-line-duotone"></iconify-icon>
-                <span class="hide-menu">Gruppi</span>
               </a>
             </li>
             <?php if (Auth::isAdmin()) { ?>
@@ -107,20 +121,6 @@ $config = require __DIR__ . '/../config.php';
               <a class="sidebar-link" href="<?php echo Helpers::url('/logs'); ?>" aria-expanded="false">
                 <iconify-icon icon="solar:history-line-duotone"></iconify-icon>
                 <span class="hide-menu">Logs</span>
-              </a>
-            </li>
-            <?php } ?>
-            <li class="sidebar-item">
-              <a class="sidebar-link" href="<?php echo Helpers::url('/software'); ?>" aria-expanded="false">
-                <iconify-icon icon="solar:inbox-in-line-duotone"></iconify-icon>
-                <span class="hide-menu">Software</span>
-              </a>
-            </li>
-            <?php if (Auth::isAdmin()) { ?>
-            <li class="sidebar-item">
-              <a class="sidebar-link" href="<?php echo Helpers::url('/students'); ?>" aria-expanded="false">
-                <iconify-icon icon="solar:user-circle-line-duotone"></iconify-icon>
-                <span class="hide-menu">Studenti</span>
               </a>
             </li>
             <?php } ?>
@@ -209,7 +209,7 @@ $config = require __DIR__ . '/../config.php';
             $uri = rtrim($uri, '/') ?: '/';
             $segments = $uri === '/' ? [] : explode('/', trim($uri, '/'));
             $labels = [
-              'laptops' => 'PC',
+              'laptops' => 'Computer',
               'customers' => 'Docenti',
               'students' => 'Studenti',
               'work-groups' => 'Gruppi',

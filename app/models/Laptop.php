@@ -25,16 +25,16 @@ class Laptop extends Model {
     return $st->fetch();
   }
   public function create($data) {
-    $st = $this->pdo->prepare('INSERT INTO laptops (code, brand_model, cpu, ram, storage, screen, tech_notes, scratches, physical_condition, battery, condition_level, office_license, windows_license, other_software_request, status, customer_id, group_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+    $st = $this->pdo->prepare('INSERT INTO laptops (code, brand_model, cpu, ram, storage, screen, tech_notes, scratches, physical_condition, battery, condition_level, office_license, windows_license, other_software_request, status, customer_id, group_id, last_operator_student_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
     $st->execute([
-      $data['code'],$data['brand_model'],$data['cpu'],$data['ram'],$data['storage'],$data['screen'],$data['tech_notes'],$data['scratches'],$data['physical_condition'],$data['battery'],$data['condition_level'],$data['office_license'],$data['windows_license'],$data['other_software_request'],$data['status'],$data['customer_id'] ?: null,$data['group_id'] ?: null
+      $data['code'],$data['brand_model'],$data['cpu'],$data['ram'],$data['storage'],$data['screen'],$data['tech_notes'],$data['scratches'],$data['physical_condition'],$data['battery'],$data['condition_level'],$data['office_license'],$data['windows_license'],$data['other_software_request'],$data['status'],$data['customer_id'] ?: null,$data['group_id'] ?: null,$data['last_operator_student_id'] ?: null
     ]);
     return $this->pdo->lastInsertId();
   }
   public function update($id, $data) {
-    $st = $this->pdo->prepare('UPDATE laptops SET code=?, brand_model=?, cpu=?, ram=?, storage=?, screen=?, tech_notes=?, scratches=?, physical_condition=?, battery=?, condition_level=?, office_license=?, windows_license=?, other_software_request=?, status=?, customer_id=?, group_id=? WHERE id=?');
+    $st = $this->pdo->prepare('UPDATE laptops SET code=?, brand_model=?, cpu=?, ram=?, storage=?, screen=?, tech_notes=?, scratches=?, physical_condition=?, battery=?, condition_level=?, office_license=?, windows_license=?, other_software_request=?, status=?, customer_id=?, group_id=?, last_operator_student_id=? WHERE id=?');
     $st->execute([
-      $data['code'],$data['brand_model'],$data['cpu'],$data['ram'],$data['storage'],$data['screen'],$data['tech_notes'],$data['scratches'],$data['physical_condition'],$data['battery'],$data['condition_level'],$data['office_license'],$data['windows_license'],$data['other_software_request'],$data['status'],$data['customer_id'] ?: null,$data['group_id'] ?: null,$id
+      $data['code'],$data['brand_model'],$data['cpu'],$data['ram'],$data['storage'],$data['screen'],$data['tech_notes'],$data['scratches'],$data['physical_condition'],$data['battery'],$data['condition_level'],$data['office_license'],$data['windows_license'],$data['other_software_request'],$data['status'],$data['customer_id'] ?: null,$data['group_id'] ?: null,$data['last_operator_student_id'] ?: null,$id
     ]);
   }
   public function delete($id) {

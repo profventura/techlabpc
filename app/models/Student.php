@@ -35,8 +35,9 @@ class Student extends Model {
     return $st->fetch();
   }
   public function create($data) {
+    $pwdHash = isset($data['password_hash']) ? $data['password_hash'] : password_hash($data['password'], PASSWORD_DEFAULT);
     $st = $this->pdo->prepare('INSERT INTO students (first_name,last_name,email,password_hash,role,active) VALUES (?,?,?,?,?,?)');
-    $st->execute([$data['first_name'],$data['last_name'],$data['email'],password_hash($data['password'], PASSWORD_DEFAULT),$data['role'],$data['active']]);
+    $st->execute([$data['first_name'],$data['last_name'],$data['email'],$pwdHash,$data['role'],$data['active']]);
     return $this->pdo->lastInsertId();
   }
   public function update($id,$data) {

@@ -33,13 +33,23 @@
       ],
       dom: 'Bfrtip',
       buttons: [
-        { extend: 'copy', className: 'btn btn-outline-primary' },
-        { extend: 'csv', className: 'btn btn-outline-primary' },
-        { extend: 'excel', className: 'btn btn-outline-primary' },
-        { extend: 'pdf', className: 'btn btn-outline-primary' },
-        { extend: 'print', className: 'btn btn-outline-primary' },
-        { extend: 'colvis', className: 'btn btn-outline-primary' }
-      ]
+        { extend: 'copy', text: 'Copia', className: 'btn btn-outline-primary' },
+        { extend: 'csv', text: 'CSV', className: 'btn btn-outline-primary' },
+        { extend: 'excel', text: 'Excel', className: 'btn btn-outline-primary' },
+        { extend: 'pdf', text: 'PDF', className: 'btn btn-outline-primary' },
+        { extend: 'print', text: 'Stampa', className: 'btn btn-outline-primary' },
+        { extend: 'colvis', text: 'Colonne', className: 'btn btn-outline-primary' }
+      ],
+      language: {
+        search: 'Cerca:',
+        lengthMenu: 'Mostra _MENU_ righe',
+        info: 'Mostra da _START_ a _END_ di _TOTAL_',
+        infoEmpty: 'Nessun record',
+        zeroRecords: 'Nessun risultato trovato',
+        loadingRecords: 'Caricamento...',
+        processing: 'Elaborazione...',
+        paginate: { first: 'Prima', last: 'Ultima', next: 'Successiva', previous: 'Precedente' }
+      }
     });
     var t = document.getElementById('softwareTable');
     var wid = t.id + '_search';
