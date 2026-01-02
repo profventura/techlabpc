@@ -124,3 +124,4 @@
     lsel2.attr({ id: lid2, name: lid2, 'aria-label': 'Numero righe' });
   });
 </script>
+
