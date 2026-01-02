@@ -1,26 +1,35 @@
 <h3 class="mb-3">Gruppi</h3>
 <div class="row mb-3">
   <div class="col-md-4">
-    <div class="card">
+    <div class="card bg-info-subtle">
       <div class="card-body">
-        <h5 class="card-title fw-semibold mb-2">Numero gruppi</h5>
-        <div class="fs-5"><?php echo (int)($summary['groups'] ?? 0); ?></div>
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-info flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:users-group-two-rounded-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Numero gruppi</h5>
+        <h2 class="card-text text-info text-center"><?php echo (int)($summary['groups'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card">
+    <div class="card bg-primary-subtle">
       <div class="card-body">
-        <h5 class="card-title fw-semibold mb-2">Numero studenti</h5>
-        <div class="fs-5"><?php echo (int)($summary['students'] ?? 0); ?></div>
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-primary flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:user-circle-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Numero studenti</h5>
+        <h2 class="card-text text-primary text-center"><?php echo (int)($summary['students'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card">
+    <div class="card bg-secondary-subtle">
       <div class="card-body">
-        <h5 class="card-title fw-semibold mb-2">Numero PC assegnati</h5>
-        <div class="fs-5"><?php echo (int)($summary['laptops'] ?? 0); ?></div>
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-secondary flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:laptop-minimalistic-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Numero PC assegnati</h5>
+        <h2 class="card-text text-secondary text-center"><?php echo (int)($summary['laptops'] ?? 0); ?></h2>
       </div>
     </div>
   </div>

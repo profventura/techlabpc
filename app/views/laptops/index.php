@@ -1,4 +1,39 @@
 <h3 class="mb-3">Computer</h3>
+<div class="row mb-3">
+  <div class="col-md-4">
+    <div class="card bg-primary-subtle">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-primary flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:laptop-minimalistic-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Numero computer</h5>
+        <h2 class="card-text text-primary text-center"><?php echo (int)($summary['total'] ?? 0); ?></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-success-subtle">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-success flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:check-circle-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Computer Pronti</h5>
+        <h2 class="card-text text-success text-center"><?php echo (int)($summary['ready'] ?? 0); ?></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-warning-subtle">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-warning flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:settings-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Lavorazione in corso</h5>
+        <h2 class="card-text text-warning text-center"><?php echo (int)($summary['in_work'] ?? 0); ?></h2>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="d-flex justify-content-end mb-3 gap-2">
   <a class="btn btn-outline-success export-csv" data-count="<?php echo count($laptops); ?>" href="<?php echo \App\Core\Helpers::url('/laptops/export'); ?>">Esporta CSV</a>
   <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#importModal">Importa CSV</button>

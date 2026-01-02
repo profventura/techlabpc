@@ -8,7 +8,12 @@ class SoftwareController {
   public function index() {
     Auth::require();
     $items = (new Software())->all();
-    Helpers::view('software/index', ['title'=>'Software','items'=>$items]);
+    $pdo = \App\Core\DB::conn();
+    $total = (int)$pdo->query('SELECT COUNT(*) c FROM software')->fetch()['c'];
+    $free = (int)$pdo->query("SELECT COUNT(*) c FROM software WHERE cost IS NULL OR cost=0 OR LOWER(COALESCE(license,'')) LIKE 'free%'")->fetch()['c'];
+    $paid = (int)$pdo->query("SELECT COUNT(*) c FROM software WHERE cost IS NOT NULL AND cost > 0")->fetch()['c'];
+    $summary = ['total'=>$total,'free'=>$free,'paid'=>$paid];
+    Helpers::view('software/index', ['title'=>'Software','items'=>$items,'summary'=>$summary]);
   }
   public function createForm() {
     Auth::require();

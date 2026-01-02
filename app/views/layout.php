@@ -27,10 +27,10 @@ $config = require __DIR__ . '/../config.php';
               <div class="min-vh-100 bg-body row justify-content-center align-items-center p-5">
                 <div class="col-12 auth-card">
                   <a href="<?php echo Helpers::url('/'); ?>" class="text-nowrap logo-img d-block w-100">
-                    <img src="<?php echo Helpers::url('public/images/logos/logo.png'); ?>" width="90" alt="TechLab PC" />
+                    <img src="<?php echo Helpers::url('public/images/logos/logo_v3_scuro.png'); ?>" width="400" alt="TechLab PC" />
                   </a>
                   <h2 class="mb-2 mt-4 fs-7 fw-bolder">Sign In</h2>
-                  <p class="mb-9">Accedi al pannello di controllo</p>
+                  <p class="mb-9">Accedi al TechLab PC</p>
                   <?php if (isset($error)) { ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php } ?>
                   <?php
                   $viewFile = __DIR__ . '/' . $template . '.php';
@@ -48,10 +48,11 @@ $config = require __DIR__ . '/../config.php';
                 <div class="row justify-content-center w-100">
                   <div class="col-lg-6">
                     <h2 class="text-white fs-10 mb-3 lh-sm">
-                      Welcome to <br /> TechLab PC
+                      Benvenuto al <br />  TechLab PC
                     </h2>
                     <span class="opacity-75 fs-4 text-white d-block mb-3">
-                      Gestione Laboratorio e Studenti
+                      Gestionale Azienda Simulata <br>
+                      I Informatico a.s. 2025/2026
                     </span>
                   </div>
                 </div>

@@ -1,34 +1,46 @@
 <h3 class="mb-3">Docenti</h3>
 <div class="row mb-3">
   <div class="col-md-3">
-    <div class="card">
+    <div class="card bg-secondary-subtle">
       <div class="card-body">
-        <h5 class="card-title fw-semibold mb-2">Numero docenti</h5>
-        <div class="fs-5"><?php echo (int)($summary['docenti'] ?? 0); ?></div>
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-secondary flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:users-group-rounded-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Numero docenti</h5>
+        <h2 class="card-text text-secondary text-center"><?php echo (int)($summary['docenti'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card">
+    <div class="card bg-warning-subtle">
       <div class="card-body">
-        <h5 class="card-title fw-semibold mb-2">Numero PC richiesti</h5>
-        <div class="fs-5"><?php echo (int)($summary['pc_richiesti'] ?? 0); ?></div>
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-warning flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:laptop-minimalistic-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Numero PC richiesti</h5>
+        <h2 class="card-text text-warning text-center"><?php echo (int)($summary['pc_richiesti'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card">
+    <div class="card bg-secondary-subtle">
       <div class="card-body">
-        <h5 class="card-title fw-semibold mb-2">Numero PC assegnati</h5>
-        <div class="fs-5"><?php echo (int)($summary['pc_assegnati'] ?? 0); ?></div>
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-secondary flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:laptop-minimalistic-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Numero PC assegnati</h5>
+        <h2 class="card-text text-secondary text-center"><?php echo (int)($summary['pc_assegnati'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card">
+    <div class="card bg-info-subtle">
       <div class="card-body">
-        <h5 class="card-title fw-semibold mb-2">Numero PC pagati</h5>
-        <div class="fs-5"><?php echo (int)($summary['pc_pagati'] ?? 0); ?></div>
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-info flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:card-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Numero PC pagati</h5>
+        <h2 class="card-text text-info text-center"><?php echo (int)($summary['pc_pagati'] ?? 0); ?></h2>
       </div>
     </div>
   </div>

@@ -1,4 +1,39 @@
 <h3 class="mb-3">Software</h3>
+<div class="row mb-3">
+  <div class="col-md-4">
+    <div class="card bg-primary-subtle">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-primary flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:inbox-in-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Numero software</h5>
+        <h2 class="card-text text-primary text-center"><?php echo (int)($summary['total'] ?? 0); ?></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-success-subtle">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-success flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:tag-price-line-duotone" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Software free</h5>
+        <h2 class="card-text text-success text-center"><?php echo (int)($summary['free'] ?? 0); ?></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-info-subtle">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-center round-48 rounded text-bg-info flex-shrink-0 mb-3 mx-auto">
+          <iconify-icon icon="solar:dollar-minimalistic-linear" class="icon-24 text-white"></iconify-icon>
+        </div>
+        <h5 class="card-title fw-semibold text-center mb-1">Software a pagamento</h5>
+        <h2 class="card-text text-info text-center"><?php echo (int)($summary['paid'] ?? 0); ?></h2>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="d-flex justify-content-end mb-3"><a class="btn btn-primary" href="<?php echo \App\Core\Helpers::url('/software/create'); ?>">Nuovo Software</a></div>
 <div class="table-responsive">
   <table id="softwareTable" class="table table-striped table-bordered text-nowrap">

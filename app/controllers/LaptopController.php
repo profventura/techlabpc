@@ -18,7 +18,12 @@ class LaptopController {
     $laptops = $model->all($filters);
     $customers = (new Customer())->all();
     $groups = (new WorkGroup())->all();
-    Helpers::view('laptops/index', ['title'=>'Laptops','laptops'=>$laptops,'customers'=>$customers,'groups'=>$groups,'filters'=>$filters]);
+    $pdo = \App\Core\DB::conn();
+    $total = (int)$pdo->query('SELECT COUNT(*) c FROM laptops')->fetch()['c'];
+    $ready = (int)$pdo->query("SELECT COUNT(*) c FROM laptops WHERE status='ready'")->fetch()['c'];
+    $in_work = $total - $ready;
+    $summary = ['total'=>$total,'ready'=>$ready,'in_work'=>$in_work];
+    Helpers::view('laptops/index', ['title'=>'Laptops','laptops'=>$laptops,'customers'=>$customers,'groups'=>$groups,'filters'=>$filters,'summary'=>$summary]);
   }
   public function show($id) {
     Auth::require();
