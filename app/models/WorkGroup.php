@@ -2,7 +2,10 @@
 namespace App\Models;
 class WorkGroup extends Model {
   public function all() {
-    $st = $this->pdo->query('SELECT wg.*, s.first_name AS leader_first_name, s.last_name AS leader_last_name FROM work_groups wg JOIN students s ON wg.leader_student_id=s.id ORDER BY wg.name');
+    $st = $this->pdo->query('SELECT wg.*, s.first_name AS leader_first_name, s.last_name AS leader_last_name,
+      (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id=wg.id) AS members_count,
+      (SELECT COUNT(*) FROM laptops l WHERE l.group_id=wg.id) AS laptops_count
+      FROM work_groups wg JOIN students s ON wg.leader_student_id=s.id ORDER BY wg.name');
     return $st->fetchAll();
   }
   public function find($id) {

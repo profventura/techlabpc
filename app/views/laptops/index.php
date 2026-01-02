@@ -35,7 +35,7 @@
   </div>
 </form>
 <div class="table-responsive">
-  <table class="table table-striped table-bordered text-nowrap">
+  <table id="laptopsTable" class="table table-striped table-bordered text-nowrap">
     <thead class="table-light"><tr><th>Codice</th><th>Modello</th><th>Stato</th><th>Docente</th><th>Gruppo</th><th>Azioni</th></tr></thead>
     <tbody>
     <?php foreach ($laptops as $l) { ?>
@@ -55,6 +55,39 @@
     </tbody>
   </table>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    if (!window.jQuery) return;
+    var $ = window.jQuery;
+    $('#laptopsTable').DataTable({
+      responsive: true,
+      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      order: [],
+      columnDefs: [
+        { targets: -1, orderable: false, searchable: false }
+      ],
+      dom: 'Bfrtip',
+      buttons: [
+        { extend: 'copy', className: 'btn btn-outline-primary' },
+        { extend: 'csv', className: 'btn btn-outline-primary' },
+        { extend: 'excel', className: 'btn btn-outline-primary' },
+        { extend: 'pdf', className: 'btn btn-outline-primary' },
+        { extend: 'print', className: 'btn btn-outline-primary' },
+        { extend: 'colvis', className: 'btn btn-outline-primary' }
+      ]
+    });
+    var t = document.getElementById('laptopsTable');
+    var wid = t.id + '_search';
+    var wrap = $(t).closest('.dataTables_wrapper');
+    var lbl = wrap.find('.dataTables_filter label');
+    var inp = lbl.find('input');
+    inp.attr({ id: wid, name: wid, 'aria-label': 'Cerca PC' });
+    lbl.attr('for', wid);
+    var lsel = wrap.find('.dataTables_length select');
+    var lid = t.id + '_length';
+    lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+  });
+</script>
 
 <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">

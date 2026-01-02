@@ -21,36 +21,6 @@ use App\Controllers\SoftwareController;
 use App\Controllers\LogsController;
 $router = new Router();
 $pdoBootstrap = DB::conn();
-try {
-  $config = require __DIR__ . '/../app/config.php';
-  $dbName = $config['db']['name'];
-  $col = $pdoBootstrap->prepare("SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME='action_logs' AND COLUMN_NAME='action_type'");
-  $col->execute([$dbName]);
-  $current = $col->fetch()['COLUMN_TYPE'] ?? '';
-  $need = [
-    'assign_laptop_to_customer',
-    'change_laptop_status',
-    'upload_receipt',
-    'assign_laptop_to_group',
-    'create_group','update_group','delete_group',
-    'create_student','update_student','delete_student',
-    'create_customer','update_customer','delete_customer',
-    'create_payment','update_payment','delete_payment',
-    'create_software','update_software','delete_software',
-    'assign_member_to_group','remove_member_from_group',
-    'create_laptop','update_laptop','delete_laptop'
-  ];
-  $exists = [];
-  if (stripos($current, 'enum(') === 0) {
-    $inside = substr($current, 5, -1);
-    foreach (explode(',', $inside) as $v) { $exists[] = trim($v, " '"); }
-  }
-  $union = array_values(array_unique(array_merge($exists, $need)));
-  if ($union !== $exists) {
-    $lit = implode(",", array_map(function($v){ return "'".$v."'"; }, $union));
-    $pdoBootstrap->exec("ALTER TABLE action_logs MODIFY COLUMN action_type ENUM($lit) NOT NULL");
-  }
-} catch (\Throwable $e) {}
 // Ensure superuser admin exists
 $adminExists = (int)$pdoBootstrap->query("SELECT COUNT(*) c FROM students WHERE email='admin'")->fetch()['c'];
 if ($adminExists === 0) {
@@ -121,6 +91,8 @@ $router->post('/work-groups/{id}/delete', [WorkGroupController::class,'delete'])
 $router->get('/payments', [PaymentController::class,'index']);
 $router->get('/payments/create', [PaymentController::class,'createForm']);
 $router->post('/payments', [PaymentController::class,'store']);
+$router->get('/payments/{id}/edit', [PaymentController::class,'editForm']);
+$router->post('/payments/{id}/update', [PaymentController::class,'update']);
 $router->post('/payments/{id}/delete', [PaymentController::class,'delete']);
 $router->get('/logs', [LogsController::class,'index']);
 $router->get('/software', [SoftwareController::class,'index']);
