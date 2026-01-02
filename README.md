@@ -2,8 +2,11 @@ Questo progetto è stato scritto velocemente per gestire l'azienda simulata del 
 Prendete questo progetto come esempio per i futuri sviluppi software: è scritto in php puro seguendo il pattern MVC (qui una spiegazione semplice : https://www.giuseppemaccario.com/it/come-costruire-un-semplice-framework-mvc-con-php/ - anche se qui utilizza il routing di symfony mentre io preferisco riscriverlo da capo)
 Come al solito prima di modificarlo o utilizzarne una forma simile, dovete capire bene ogni singola linea di codice, altrimenti si arriverà facilmente ad un punto in cui non si potrà più andare avanti.
 Come per gli altri progetti utilizzate github per lo sviluppo: questo vi consentirà di avere tutto sott'occhio e di facilitare la possibilità di intervento.
-Buon lavoro!
-Nel branch V2 c'è la seconda versione con alcune modifiche funzionali.
+
 L'accesso d'amministratore è:
 admin
 admin
+
+Per tutte le modifiche create un nuovo branch!
+
+Buon lavoro!
