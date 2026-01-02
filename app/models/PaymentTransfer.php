@@ -11,13 +11,16 @@ class PaymentTransfer extends Model {
     return $st->fetch();
   }
   public function create($data) {
-    $st = $this->pdo->prepare('INSERT INTO payment_transfers (customer_id, amount, paid_at, reference, receipt_path, status) VALUES (?,?,?,?,?,?)');
-    $st->execute([$data['customer_id'],$data['amount'],$data['paid_at'],$data['reference'],$data['receipt_path'],$data['status']]);
+    $st = $this->pdo->prepare('INSERT INTO payment_transfers (customer_id, amount, paid_at, reference, receipt_path, pcs_paid_count, status) VALUES (?,?,?,?,?,?,?)');
+    $st->execute([$data['customer_id'],$data['amount'],$data['paid_at'],$data['reference'],$data['receipt_path'],$data['pcs_paid_count'],$data['status']]);
     return $this->pdo->lastInsertId();
+  }
+  public function update($id, $data) {
+    $st = $this->pdo->prepare('UPDATE payment_transfers SET customer_id=?, amount=?, paid_at=?, reference=?, receipt_path=?, pcs_paid_count=?, status=? WHERE id=?');
+    $st->execute([$data['customer_id'],$data['amount'],$data['paid_at'],$data['reference'],$data['receipt_path'],$data['pcs_paid_count'],$data['status'],$id]);
   }
   public function delete($id) {
     $st = $this->pdo->prepare('DELETE FROM payment_transfers WHERE id=?');
     $st->execute([$id]);
   }
 }
-

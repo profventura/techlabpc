@@ -7,13 +7,15 @@
 </div>
 <?php } ?>
 <div class="table-responsive">
-  <table class="table table-striped table-bordered text-nowrap">
-    <thead class="table-light"><tr><th>Nome</th><th>Responsabile</th><th>Azioni</th></tr></thead>
+  <table id="workGroupsTable" class="table table-striped table-bordered text-nowrap">
+    <thead class="table-light"><tr><th>Nome</th><th>Responsabile</th><th>Numero studenti</th><th>Numero PC</th><th>Azioni</th></tr></thead>
     <tbody>
     <?php foreach ($groups as $g) { ?>
       <tr>
         <td><?php echo htmlspecialchars($g['name']); ?></td>
         <td><?php echo htmlspecialchars($g['leader_last_name'].' '.$g['leader_first_name']); ?></td>
+        <td><?php echo (int)($g['members_count'] ?? 0); ?></td>
+        <td><?php echo (int)($g['laptops_count'] ?? 0); ?></td>
         <td>
           <a class="btn btn-sm btn-outline-primary" href="<?php echo \App\Core\Helpers::url('/work-groups/'.$g['id']); ?>">Apri</a>
           <?php if (\App\Core\Auth::isAdmin()) { ?>
@@ -25,6 +27,39 @@
     </tbody>
   </table>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    if (!window.jQuery) return;
+    var $ = window.jQuery;
+    $('#workGroupsTable').DataTable({
+      responsive: true,
+      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      order: [],
+      columnDefs: [
+        { targets: -1, orderable: false, searchable: false }
+      ],
+      dom: 'Bfrtip',
+      buttons: [
+        { extend: 'copy', className: 'btn btn-outline-primary' },
+        { extend: 'csv', className: 'btn btn-outline-primary' },
+        { extend: 'excel', className: 'btn btn-outline-primary' },
+        { extend: 'pdf', className: 'btn btn-outline-primary' },
+        { extend: 'print', className: 'btn btn-outline-primary' },
+        { extend: 'colvis', className: 'btn btn-outline-primary' }
+      ]
+    });
+    var t = document.getElementById('workGroupsTable');
+    var wid = t.id + '_search';
+    var wrap = $(t).closest('.dataTables_wrapper');
+    var lbl = wrap.find('.dataTables_filter label');
+    var inp = lbl.find('input');
+    inp.attr({ id: wid, name: wid, 'aria-label': 'Cerca gruppi' });
+    lbl.attr('for', wid);
+    var lsel = wrap.find('.dataTables_length select');
+    var lid = t.id + '_length';
+    lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+  });
+</script>
 <?php if (\App\Core\Auth::isAdmin()) { ?>
 <div class="modal fade" id="importWgModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
@@ -80,4 +115,3 @@
     document.getElementById('delGroupName').textContent = name || '';
   });
 </script>
-

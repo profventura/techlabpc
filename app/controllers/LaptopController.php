@@ -30,7 +30,7 @@ class LaptopController {
   }
   public function createForm() {
     Auth::require();
-    $customers = (new Customer())->all();
+    $customers = (new Customer())->availableForLaptop();
     $groups = (new WorkGroup())->all();
     $softwares = (new \App\Models\Software())->all();
     $config = require __DIR__ . '/../config.php';
@@ -76,6 +76,16 @@ class LaptopController {
       'group_id'=>$_POST['group_id'] ?? null,
     ];
     $model = new Laptop();
+    if (!empty($data['customer_id'])) {
+      $cm = new Customer();
+      if (!$cm->canAssignLaptop((int)$data['customer_id'])) {
+        Helpers::addFlash('danger', 'Il docente selezionato ha già raggiunto il numero di PC richiesti');
+        $groups = (new WorkGroup())->all();
+        $softwares = (new \App\Models\Software())->all();
+        Helpers::view('laptops/form', ['title'=>'Nuovo Laptop','customers'=>$cm->availableForLaptop(),'groups'=>$groups,'laptop'=>$data,'softwares'=>$softwares,'selected_software_ids'=>array_map('intval', $_POST['software_ids'] ?? [])]);
+        return;
+      }
+    }
     $id = $model->create($data);
     $softwareIds = array_map('intval', $_POST['software_ids'] ?? []);
     $model->setSoftwares($id, $softwareIds);
@@ -89,7 +99,7 @@ class LaptopController {
     Auth::require();
     $model = new Laptop();
     $laptop = $model->find($id);
-    $customers = (new Customer())->all();
+    $customers = (new Customer())->availableForLaptop($laptop['customer_id'] ?? null);
     $groups = (new WorkGroup())->all();
     $softwares = (new \App\Models\Software())->all();
     $selected = $model->softwareIds($id);
@@ -120,6 +130,17 @@ class LaptopController {
     $model = new Laptop();
     $existing = $model->find($id);
     $prevStatus = $existing['status'] ?? null;
+    if (!empty($data['customer_id'])) {
+      $cm = new Customer();
+      if (!$cm->canAssignLaptop((int)$data['customer_id'], $existing['customer_id'] ?? null)) {
+        Helpers::addFlash('danger', 'Il docente selezionato ha già raggiunto il numero di PC richiesti');
+        $groups = (new WorkGroup())->all();
+        $softwares = (new \App\Models\Software())->all();
+        $selected = $model->softwareIds($id);
+        Helpers::view('laptops/form', ['title'=>'Modifica Laptop','customers'=>$cm->availableForLaptop($existing['customer_id'] ?? null),'groups'=>$groups,'laptop'=>array_merge($existing,$data),'softwares'=>$softwares,'selected_software_ids'=>$selected]);
+        return;
+      }
+    }
     $model->update($id, $data);
     $softwareIds = array_map('intval', $_POST['software_ids'] ?? []);
     $model->setSoftwares($id, $softwareIds);

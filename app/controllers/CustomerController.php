@@ -25,7 +25,7 @@ class CustomerController {
   public function store() {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
-    $data = ['first_name'=>trim($_POST['first_name'] ?? ''),'last_name'=>trim($_POST['last_name'] ?? ''),'email'=>trim($_POST['email'] ?? ''),'notes'=>trim($_POST['notes'] ?? '')];
+    $data = ['first_name'=>trim($_POST['first_name'] ?? ''),'last_name'=>trim($_POST['last_name'] ?? ''),'email'=>trim($_POST['email'] ?? ''),'notes'=>trim($_POST['notes'] ?? ''),'pc_requested_count'=>intval($_POST['pc_requested_count'] ?? 0)];
     $id = (new Customer())->create($data);
     (new \App\Models\Log())->addAction('create_customer', \App\Core\Auth::user()['id'] ?? null, ['customer_id'=>$id, 'note'=>$data['email']]);
     Helpers::redirect('/customers/'.$id);
@@ -38,7 +38,7 @@ class CustomerController {
   public function update($id) {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
-    $data = ['first_name'=>trim($_POST['first_name'] ?? ''),'last_name'=>trim($_POST['last_name'] ?? ''),'email'=>trim($_POST['email'] ?? ''),'notes'=>trim($_POST['notes'] ?? '')];
+    $data = ['first_name'=>trim($_POST['first_name'] ?? ''),'last_name'=>trim($_POST['last_name'] ?? ''),'email'=>trim($_POST['email'] ?? ''),'notes'=>trim($_POST['notes'] ?? ''),'pc_requested_count'=>intval($_POST['pc_requested_count'] ?? 0)];
     (new Customer())->update($id,$data);
     (new \App\Models\Log())->addAction('update_customer', \App\Core\Auth::user()['id'] ?? null, ['customer_id'=>$id, 'note'=>$data['email']]);
     Helpers::redirect('/customers/'.$id);

@@ -5,13 +5,18 @@
   <a class="btn btn-primary" href="<?php echo \App\Core\Helpers::url('/customers/create'); ?>">Nuovo Docente</a>
 </div>
 <div class="table-responsive">
-  <table class="table table-striped table-bordered text-nowrap">
-    <thead class="table-light"><tr><th>Nome</th><th>Email</th><th>Azioni</th></tr></thead>
+  <table id="customersTable" class="table table-striped table-bordered text-nowrap">
+    <thead class="table-light"><tr><th>Nome</th><th>Email</th><th>PC richiesti</th><th>PC assegnati</th><th>PC pagati</th><th>Stato</th><th>Azioni</th></tr></thead>
     <tbody>
     <?php foreach ($customers as $c) { ?>
       <tr>
         <td><?php echo htmlspecialchars($c['last_name'].' '.$c['first_name']); ?></td>
         <td><?php echo htmlspecialchars($c['email']); ?></td>
+        <td><?php echo (int)($c['pc_requested_count'] ?? 0); ?></td>
+        <td><?php echo (int)($c['laptops_count'] ?? 0); ?></td>
+        <td><?php echo (int)($c['pcs_paid_total'] ?? 0); ?></td>
+        <?php $req = (int)($c['pc_requested_count'] ?? 0); $ass = (int)($c['laptops_count'] ?? 0); $paid = (int)($c['pcs_paid_total'] ?? 0); ?>
+        <td><span class="badge bg-<?php echo ($req === $ass && $ass === $paid) ? 'success' : 'danger'; ?>"><?php echo ($req === $ass && $ass === $paid) ? 'ok' : 'no'; ?></span></td>
         <td>
           <a class="btn btn-sm btn-outline-primary" href="<?php echo \App\Core\Helpers::url('/customers/'.$c['id']); ?>">Apri</a>
           <?php if (\App\Core\Auth::isAdmin()) { ?>
@@ -23,6 +28,39 @@
     </tbody>
   </table>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    if (!window.jQuery) return;
+    var $ = window.jQuery;
+    $('#customersTable').DataTable({
+      responsive: true,
+      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      order: [],
+      columnDefs: [
+        { targets: -1, orderable: false, searchable: false }
+      ],
+      dom: 'Bfrtip',
+      buttons: [
+        { extend: 'copy', className: 'btn btn-outline-primary' },
+        { extend: 'csv', className: 'btn btn-outline-primary' },
+        { extend: 'excel', className: 'btn btn-outline-primary' },
+        { extend: 'pdf', className: 'btn btn-outline-primary' },
+        { extend: 'print', className: 'btn btn-outline-primary' },
+        { extend: 'colvis', className: 'btn btn-outline-primary' }
+      ]
+    });
+    var t = document.getElementById('customersTable');
+    var wid = t.id + '_search';
+    var wrap = $(t).closest('.dataTables_wrapper');
+    var lbl = wrap.find('.dataTables_filter label');
+    var inp = lbl.find('input');
+    inp.attr({ id: wid, name: wid, 'aria-label': 'Cerca docenti' });
+    lbl.attr('for', wid);
+    var lsel = wrap.find('.dataTables_length select');
+    var lid = t.id + '_length';
+    lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+  });
+</script>
 
 <div class="modal fade" id="deleteCustomerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">

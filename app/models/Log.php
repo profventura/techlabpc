@@ -16,14 +16,12 @@ class Log extends Model {
     return $this->pdo->query($sql)->fetchAll();
   }
   public function addAction($type, $actor_student_id, $payload = []) {
+    $actor = (isset($actor_student_id) && is_numeric($actor_student_id) && (int)$actor_student_id > 0) ? (int)$actor_student_id : null;
+    $laptop = (isset($payload['laptop_id']) && is_numeric($payload['laptop_id']) && (int)$payload['laptop_id'] > 0) ? (int)$payload['laptop_id'] : null;
+    $customer = (isset($payload['customer_id']) && is_numeric($payload['customer_id']) && (int)$payload['customer_id'] > 0) ? (int)$payload['customer_id'] : null;
+    $group = (isset($payload['group_id']) && is_numeric($payload['group_id']) && (int)$payload['group_id'] > 0) ? (int)$payload['group_id'] : null;
+    $note = isset($payload['note']) ? $payload['note'] : null;
     $st = $this->pdo->prepare('INSERT INTO action_logs (actor_student_id, action_type, laptop_id, customer_id, group_id, note) VALUES (?,?,?,?,?,?)');
-    $st->execute([
-      $actor_student_id,
-      $type,
-      $payload['laptop_id'] ?? null,
-      $payload['customer_id'] ?? null,
-      $payload['group_id'] ?? null,
-      $payload['note'] ?? null
-    ]);
+    $st->execute([$actor, $type, $laptop, $customer, $group, $note]);
   }
 }

@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS customers (
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
   email VARCHAR(190) NOT NULL UNIQUE,
+  pc_requested_count INT NOT NULL DEFAULT 0,
   notes TEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
@@ -122,6 +123,7 @@ CREATE TABLE IF NOT EXISTS payment_transfers (
   paid_at DATE NOT NULL,
   reference VARCHAR(190) NULL,
   receipt_path VARCHAR(255) NULL,
+  pcs_paid_count INT NOT NULL DEFAULT 0,
   status ENUM('pending','verified','rejected') NOT NULL DEFAULT 'pending',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -143,7 +145,19 @@ CREATE TABLE IF NOT EXISTS access_logs (
 CREATE TABLE IF NOT EXISTS action_logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   actor_student_id INT NULL,
-  action_type ENUM('assign_laptop_to_customer','change_laptop_status','upload_receipt','assign_laptop_to_group') NOT NULL,
+  action_type ENUM(
+    'assign_laptop_to_customer',
+    'change_laptop_status',
+    'upload_receipt',
+    'assign_laptop_to_group',
+    'create_group','update_group','delete_group',
+    'create_student','update_student','delete_student',
+    'create_customer','update_customer','delete_customer',
+    'create_payment','update_payment','delete_payment',
+    'create_software','update_software','delete_software',
+    'assign_member_to_group','remove_member_from_group',
+    'create_laptop','update_laptop','delete_laptop'
+  ) NOT NULL,
   laptop_id INT NULL,
   customer_id INT NULL,
   group_id INT NULL,

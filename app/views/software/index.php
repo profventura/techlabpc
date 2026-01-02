@@ -1,7 +1,7 @@
 <h3 class="mb-3">Software</h3>
 <div class="d-flex justify-content-end mb-3"><a class="btn btn-primary" href="<?php echo \App\Core\Helpers::url('/software/create'); ?>">Nuovo Software</a></div>
 <div class="table-responsive">
-  <table class="table table-striped table-bordered text-nowrap">
+  <table id="softwareTable" class="table table-striped table-bordered text-nowrap">
     <thead class="table-light"><tr><th>Nome</th><th>Versione</th><th>Licenza</th><th>Costo</th><th>Elimina</th></tr></thead>
     <tbody>
     <?php foreach ($items as $s) { ?>
@@ -20,6 +20,39 @@
   </table>
   <?php if (empty($items)) { ?><div class="alert alert-info">Nessun software presente.</div><?php } ?>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    if (!window.jQuery) return;
+    var $ = window.jQuery;
+    $('#softwareTable').DataTable({
+      responsive: true,
+      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      order: [],
+      columnDefs: [
+        { targets: -1, orderable: false, searchable: false }
+      ],
+      dom: 'Bfrtip',
+      buttons: [
+        { extend: 'copy', className: 'btn btn-outline-primary' },
+        { extend: 'csv', className: 'btn btn-outline-primary' },
+        { extend: 'excel', className: 'btn btn-outline-primary' },
+        { extend: 'pdf', className: 'btn btn-outline-primary' },
+        { extend: 'print', className: 'btn btn-outline-primary' },
+        { extend: 'colvis', className: 'btn btn-outline-primary' }
+      ]
+    });
+    var t = document.getElementById('softwareTable');
+    var wid = t.id + '_search';
+    var wrap = $(t).closest('.dataTables_wrapper');
+    var lbl = wrap.find('.dataTables_filter label');
+    var inp = lbl.find('input');
+    inp.attr({ id: wid, name: wid, 'aria-label': 'Cerca software' });
+    lbl.attr('for', wid);
+    var lsel = wrap.find('.dataTables_length select');
+    var lid = t.id + '_length';
+    lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+  });
+</script>
 
 <div class="modal fade" id="deleteSoftwareModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">

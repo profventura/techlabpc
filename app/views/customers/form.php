@@ -17,6 +17,10 @@
           <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($customer['email']??''); ?>" required>
         </div>
         <div class="col-md-12 mb-3">
+          <label class="form-label">PC richiesti dal docente</label>
+          <input type="number" class="form-control" name="pc_requested_count" value="<?php echo htmlspecialchars((string)($customer['pc_requested_count']??0)); ?>" min="0">
+        </div>
+        <div class="col-md-12 mb-3">
           <label class="form-label">Note</label>
           <textarea class="form-control" name="notes" rows="3"><?php echo htmlspecialchars($customer['notes']??''); ?></textarea>
         </div>
