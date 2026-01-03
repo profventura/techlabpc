@@ -1,10 +1,17 @@
 <?php
+/*
+  File: Log.php
+  Scopo: Modello per la gestione dei log (accessi e azioni).
+  Spiegazione: Fornisce query di elenco e un metodo per registrare nuove azioni.
+*/
 namespace App\Models;
 class Log extends Model {
+  // Elenco log di accesso con nome/cognome dello studente
   public function accessLogs() {
     $sql = 'SELECT a.*, s.first_name, s.last_name FROM access_logs a LEFT JOIN students s ON a.student_id=s.id ORDER BY a.created_at DESC';
     return $this->pdo->query($sql)->fetchAll();
   }
+  // Elenco log di azione con join verso studente, laptop, docente e gruppo
   public function actionLogs() {
     $sql = 'SELECT l.*, s.first_name, s.last_name, lp.code AS laptop_code, c.first_name AS customer_first_name, c.last_name AS customer_last_name, g.name AS group_name
             FROM action_logs l
@@ -15,6 +22,14 @@ class Log extends Model {
             ORDER BY l.created_at DESC';
     return $this->pdo->query($sql)->fetchAll();
   }
+  /*
+    Metodo: addAction
+    Parametri:
+      - type: tipo di azione (stringa)
+      - actor_student_id: ID dello studente che ha eseguito l’azione (opzionale)
+      - payload: array con laptop_id, customer_id, group_id e nota (opzionali)
+    Funzione: Inserisce una nuova riga in action_logs normalizzando gli ID eventualmente null.
+  */
   public function addAction($type, $actor_student_id, $payload = []) {
     $actor = (isset($actor_student_id) && is_numeric($actor_student_id) && (int)$actor_student_id > 0) ? (int)$actor_student_id : null;
     $laptop = (isset($payload['laptop_id']) && is_numeric($payload['laptop_id']) && (int)$payload['laptop_id'] > 0) ? (int)$payload['laptop_id'] : null;

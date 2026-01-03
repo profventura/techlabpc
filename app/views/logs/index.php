@@ -1,3 +1,7 @@
+<!--
+  Vista: logs/index.php
+  Scopo: Mostra i log di accesso e di azione con tabelle DataTables, pulsanti di svuotamento e filtri.
+-->
 <h3 class="mb-3">Logs</h3>
 <?php if (\App\Core\Auth::isAdmin()) { ?>
 <div class="d-flex justify-content-end mb-3 gap-2">
@@ -60,6 +64,7 @@
   document.addEventListener('DOMContentLoaded', function(){
     if (!window.jQuery) return;
     var $ = window.jQuery;
+    // Inizializzazione DataTable per la tabella Accessi
     $('#accessLogsTable').DataTable({
       responsive: true,
       deferRender: true,
@@ -97,6 +102,7 @@
     var lsel1 = wrap1.find('.dataTables_length select');
     var lid1 = t1.id + '_length';
     lsel1.attr({ id: lid1, name: lid1, 'aria-label': 'Numero righe' });
+    // Inizializzazione DataTable per la tabella Azioni
     $('#actionLogsTable').DataTable({
       responsive: true,
       deferRender: true,

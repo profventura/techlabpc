@@ -1,3 +1,7 @@
+<!--
+  Vista: laptops/index.php
+  Scopo: Elenco dei PC/Laptop con filtri, card riepilogative e funzionalità import/export.
+-->
 <h3 class="mb-3">Computer</h3>
 <div class="row mb-3">
   <div class="col-md-4">
@@ -94,6 +98,7 @@
   document.addEventListener('DOMContentLoaded', function(){
     if (!window.jQuery) return;
     var $ = window.jQuery;
+    // Inizializzazione DataTable per i laptop con impostazioni performance
     $('#laptopsTable').DataTable({
       responsive: true,
       deferRender: true,
@@ -139,6 +144,7 @@
     var lsel = wrap.find('.dataTables_length select');
     var lid = t.id + '_length';
     lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+    // Aggiornamento asincrono dei valori delle card dal backend (view_cards)
     fetch('<?php echo \App\Core\Helpers::url('/api/view-cards'); ?>?scope=laptops').then(function(r){ return r.json(); }).then(function(data){
       if (data && data.metrics) {
         var ms = document.querySelectorAll('.metric-value');

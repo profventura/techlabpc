@@ -1,4 +1,9 @@
 <?php
+/*
+  File: PaymentController.php
+  Scopo: Gestisce i bonifici/pagamenti (lista, creazione, modifica, eliminazione) e i relativi allegati.
+  Spiegazione: Coordina il modello PaymentTransfer e aggiorna le card dei pagamenti e dei docenti.
+*/
 namespace App\Controllers;
 use App\Core\Auth;
 use App\Core\CSRF;
@@ -6,6 +11,7 @@ use App\Core\Helpers;
 use App\Models\PaymentTransfer;
 use App\Models\Customer;
 class PaymentController {
+  // Lista pagamenti con riepilogo card
   public function index() {
     Auth::require();
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
@@ -24,12 +30,14 @@ class PaymentController {
     $summary = ['pcs_paid'=>$m['pcs_paid'] ?? 0,'customers'=>$m['customers'] ?? 0,'pcs_requested'=>$m['pcs_requested'] ?? 0];
     Helpers::view('payments/index', ['title'=>'Pagamenti','payments'=>$payments,'summary'=>$summary]);
   }
+  // Visualizza form di creazione bonifico
   public function createForm() {
     Auth::require();
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
     $customers = (new Customer())->all();
     Helpers::view('payments/form', ['title'=>'Nuovo bonifico','customers'=>$customers,'payment'=>null]);
   }
+  // Salva nuovo bonifico (con upload ricevuta) e aggiorna card
   public function store() {
     Auth::require();
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
@@ -51,6 +59,7 @@ class PaymentController {
     \App\Services\ViewCardService::refreshCustomers();
     Helpers::redirect('/payments');
   }
+  // Visualizza form di modifica bonifico
   public function editForm($id) {
     Auth::require();
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
@@ -58,6 +67,7 @@ class PaymentController {
     $customers = (new Customer())->all();
     Helpers::view('payments/form', ['title'=>'Modifica bonifico','customers'=>$customers,'payment'=>$payment]);
   }
+  // Aggiorna bonifico (sostituzione ricevuta se presente) e aggiorna card
   public function update($id) {
     Auth::require();
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
@@ -89,6 +99,7 @@ class PaymentController {
     \App\Services\ViewCardService::refreshCustomers();
     Helpers::redirect('/payments');
   }
+  // Elimina bonifico, rimuove eventuale file e aggiorna card
   public function delete($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }

@@ -1,10 +1,16 @@
 <?php
+/*
+  File: StudentController.php
+  Scopo: Gestisce le operazioni sugli Studenti (lista, creazione, modifica, eliminazione, import/export).
+  Spiegazione: Controlla i permessi admin, coordina filtri di ricerca e aggiorna le card riepilogative.
+*/
 namespace App\Controllers;
 use App\Core\Auth;
 use App\Core\CSRF;
 use App\Core\Helpers;
 use App\Models\Student;
 class StudentController {
+  // Lista studenti con filtri e card (solo admin)
   public function index() {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -30,11 +36,13 @@ class StudentController {
     $summary = ['students'=>$m['students'] ?? 0,'leaders'=>$m['leaders'] ?? 0,'installers'=>$m['installers'] ?? 0];
     Helpers::view('students/index', ['title'=>'Studenti','students'=>$students,'filters'=>$filters,'groups'=>$groups,'summary'=>$summary]);
   }
+  // Visualizza form di creazione nuovo studente
   public function createForm() {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
     Helpers::view('students/form', ['title'=>'Nuovo Studente','student'=>null]);
   }
+  // Salva nuovo studente, con password obbligatoria e aggiornamento card
   public function store() {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -57,12 +65,14 @@ class StudentController {
     \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/students');
   }
+  // Visualizza form di modifica studente
   public function editForm($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
     $s = (new Student())->find($id);
     Helpers::view('students/form', ['title'=>'Modifica Studente','student'=>$s]);
   }
+  // Aggiorna dati studente e registra log
   public function update($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -81,6 +91,7 @@ class StudentController {
     \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/students');
   }
+  // Elimina studente, registra log e aggiorna card
   public function delete($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -92,6 +103,7 @@ class StudentController {
     Helpers::redirect('/students');
   }
 
+  // Esporta studenti in CSV
   public function export() {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -123,6 +135,7 @@ class StudentController {
     exit;
   }
 
+  // Importa studenti da CSV (imposta password default se assente) e aggiorna card
   public function import() {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }

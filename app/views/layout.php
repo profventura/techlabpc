@@ -4,6 +4,11 @@ use App\Core\Auth;
 $config = require __DIR__ . '/../config.php';
 ?>
 <!DOCTYPE html>
+<!--
+  File: layout.php
+  Scopo: Layout principale dell’applicazione (header, sidebar, breadcrumb, inclusione scripts e contenuto).
+  Spiegazione: Tutte le viste vengono renderizzate all’interno di questo layout comune.
+-->
 <html lang="en" dir="ltr" data-bs-theme="light" data-color-theme="Blue_Theme" data-layout="vertical">
 <head>
   <meta charset="UTF-8" />
@@ -12,7 +17,6 @@ $config = require __DIR__ . '/../config.php';
   <link rel="shortcut icon" type="image/png" href="<?php echo Helpers::url('public/images/logos/favicon.png'); ?>?v=<?php echo time(); ?>" />
   <link rel="stylesheet" href="<?php echo Helpers::url('public/css/fonts-manrope.css'); ?>" />
   <link rel="stylesheet" href="<?php echo Helpers::url('public/css/styles.css'); ?>" />
-  <link rel="preload" href="<?php echo Helpers::url('public/libs/iconify/solar.json'); ?>" as="fetch">
   <link rel="preload" href="<?php echo Helpers::url('public/fonts/tabler-icons/fonts/tabler-icons.woff2?v2.11.0'); ?>" as="font" type="font/woff2" crossorigin>
   <title><?php echo htmlspecialchars($title ?? 'TechLab PC'); ?></title>
 </head>
@@ -290,7 +294,7 @@ $config = require __DIR__ . '/../config.php';
   <script>
     (function () {
       var u = '<?php echo Helpers::url('public/libs/iconify/solar.json'); ?>';
-      fetch(u).then(function (r) { return r.json(); }).then(function (col) {
+      fetch(u, { credentials: 'omit' }).then(function (r) { return r.json(); }).then(function (col) {
         var api = window.Iconify || window.IconifyIcon;
         if (api && api.addCollection) { api.addCollection(col); }
       });

@@ -1,3 +1,7 @@
+<!--
+  Vista: payments/index.php
+  Scopo: Elenco pagamenti/bonifici con card riepilogative e gestione allegati.
+-->
 <h3 class="mb-3">Pagamenti bonifico</h3>
 <div class="row mb-3">
   <div class="col-md-4">
@@ -67,6 +71,7 @@
   document.addEventListener('DOMContentLoaded', function(){
     if (!window.jQuery) return;
     var $ = window.jQuery;
+    // Inizializzazione DataTable per la lista pagamenti
     $('#paymentsTable').DataTable({
       responsive: true,
       deferRender: true,
@@ -107,6 +112,7 @@
     var lsel = wrap.find('.dataTables_length select');
     var lid = t.id + '_length';
     lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+    // Aggiornamento asincrono delle card (scope payments)
     fetch('<?php echo \App\Core\Helpers::url('/api/view-cards'); ?>?scope=payments').then(function(r){ return r.json(); }).then(function(data){
       if (data && data.metrics) {
         var ms = document.querySelectorAll('.metric-value');

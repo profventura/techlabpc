@@ -1,3 +1,7 @@
+<!--
+  Vista: students/index.php
+  Scopo: Elenco studenti con filtri, card riepilogative e azioni CRUD (solo admin).
+-->
 <h3 class="mb-3">Studenti</h3>
 <div class="row mb-3">
   <div class="col-md-4">
@@ -114,6 +118,7 @@
     var t = document.getElementById('studentsTable');
     if (!t || !window.jQuery) return;
     var $ = window.jQuery;
+    // Inizializzazione DataTable per la lista studenti
     var dt = $(t).DataTable({
       responsive: true,
       deferRender: true,
@@ -153,6 +158,7 @@
     var lsel = wrap.find('.dataTables_length select');
     var lid = t.id + '_length';
     lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+    // Aggiornamento asincrono delle card (scope students)
     fetch('<?php echo \App\Core\Helpers::url('/api/view-cards'); ?>?scope=students').then(function(r){ return r.json(); }).then(function(data){
       if (data && data.metrics) {
         var ms = document.querySelectorAll('.metric-value');

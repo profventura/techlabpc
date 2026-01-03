@@ -1,3 +1,7 @@
+<!--
+  Vista: customers/index.php
+  Scopo: Elenco docenti con card riepilogative e azioni CRUD, export/import.
+-->
 <h3 class="mb-3">Docenti</h3>
 <div class="row mb-3">
   <div class="col-md-3">
@@ -78,6 +82,7 @@
   document.addEventListener('DOMContentLoaded', function(){
     if (!window.jQuery) return;
     var $ = window.jQuery;
+    // Inizializzazione DataTable per la lista docenti
     $('#customersTable').DataTable({
       responsive: true,
       deferRender: true,
@@ -118,6 +123,7 @@
     var lsel = wrap.find('.dataTables_length select');
     var lid = t.id + '_length';
     lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+    // Aggiornamento asincrono delle card (scope customers)
     fetch('<?php echo \App\Core\Helpers::url('/api/view-cards'); ?>?scope=customers').then(function(r){ return r.json(); }).then(function(data){
       if (data && data.metrics) {
         var ms = document.querySelectorAll('.metric-value');

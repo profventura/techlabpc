@@ -1,6 +1,12 @@
 <?php
+/*
+  File: Student.php
+  Scopo: Modello per la gestione degli Studenti.
+  Spiegazione: Fornisce metodi di ricerca con filtri, CRUD e utilità per studenti senza gruppo.
+*/
 namespace App\Models;
 class Student extends Model {
+  // Elenco studenti con filtri (ruolo, attivo, gruppo, testo) e aggregazioni nomi/ruoli di gruppo
   public function all($filters = []) {
     $sql = 'SELECT s.id, s.first_name, s.last_name, s.email, s.role, s.active,
                    GROUP_CONCAT(DISTINCT wg.name ORDER BY wg.name SEPARATOR \', \') AS group_names,
@@ -20,6 +26,7 @@ class Student extends Model {
     $st->execute($params);
     return $st->fetchAll();
   }
+  // Elenco studenti che non appartengono a nessun gruppo
   public function withoutGroup() {
     $sql = 'SELECT s.id, s.first_name, s.last_name, s.email, s.role, s.active
             FROM students s
@@ -29,17 +36,20 @@ class Student extends Model {
     $st = $this->pdo->query($sql);
     return $st->fetchAll();
   }
+  // Trova uno studente per ID
   public function find($id) {
     $st = $this->pdo->prepare('SELECT id, first_name, last_name, email, role, active FROM students WHERE id=?');
     $st->execute([$id]);
     return $st->fetch();
   }
+  // Crea un nuovo studente (calcolando l’hash della password)
   public function create($data) {
     $pwdHash = isset($data['password_hash']) ? $data['password_hash'] : password_hash($data['password'], PASSWORD_DEFAULT);
     $st = $this->pdo->prepare('INSERT INTO students (first_name,last_name,email,password_hash,role,active) VALUES (?,?,?,?,?,?)');
     $st->execute([$data['first_name'],$data['last_name'],$data['email'],$pwdHash,$data['role'],$data['active']]);
     return $this->pdo->lastInsertId();
   }
+  // Aggiorna dati studente (e password se fornita)
   public function update($id,$data) {
     if (!empty($data['password'])) {
       $st = $this->pdo->prepare('UPDATE students SET first_name=?, last_name=?, email=?, role=?, active=?, password_hash=? WHERE id=?');
@@ -49,6 +59,7 @@ class Student extends Model {
       $st->execute([$data['first_name'],$data['last_name'],$data['email'],$data['role'],$data['active'],$id]);
     }
   }
+  // Elimina uno studente per ID
   public function delete($id) {
     $st = $this->pdo->prepare('DELETE FROM students WHERE id=?');
     $st->execute([$id]);

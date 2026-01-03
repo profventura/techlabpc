@@ -1,4 +1,9 @@
 <?php
+/*
+  File: LaptopController.php
+  Scopo: Gestisce le operazioni sui PC/Laptop (lista, dettaglio, creazione, modifica, eliminazione, import/export).
+  Spiegazione: Ogni metodo corrisponde a un’azione dell’interfaccia e coordina modelli e viste.
+*/
 namespace App\Controllers;
 use App\Core\Auth;
 use App\Core\CSRF;
@@ -7,6 +12,7 @@ use App\Models\Laptop;
 use App\Models\Customer;
 use App\Models\WorkGroup;
 class LaptopController {
+  // Lista dei laptop con filtri e riepilogo card
   public function index() {
     Auth::require();
     $model = new Laptop();
@@ -32,6 +38,7 @@ class LaptopController {
     $summary = ['total'=>$m['total'] ?? 0,'ready'=>$m['ready'] ?? 0,'in_work'=>$m['in_work'] ?? 0];
     Helpers::view('laptops/index', ['title'=>'Laptops','laptops'=>$laptops,'customers'=>$customers,'groups'=>$groups,'filters'=>$filters,'summary'=>$summary]);
   }
+  // Mostra il dettaglio di un laptop con storico stati e software associati
   public function show($id) {
     Auth::require();
     $model = new Laptop();
@@ -40,6 +47,7 @@ class LaptopController {
     $software_list = $model->softwareList($id);
     Helpers::view('laptops/show', ['title'=>'Laptop','laptop'=>$l,'history'=>$history,'software_list'=>$software_list]);
   }
+  // Visualizza form di creazione nuovo laptop con valori di default
   public function createForm() {
     Auth::require();
     $customers = (new Customer())->availableForLaptop();
@@ -63,6 +71,7 @@ class LaptopController {
     ];
     Helpers::view('laptops/form', ['title'=>'Nuovo Laptop','customers'=>$customers,'groups'=>$groups,'laptop'=>$laptopDefaults,'softwares'=>$softwares,'selected_software_ids'=>[]]);
   }
+  // Salva un nuovo laptop e aggiorna lo storico stato e le card
   public function store() {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
@@ -111,6 +120,7 @@ class LaptopController {
     \App\Services\ViewCardService::refreshLaptops();
     Helpers::redirect('/laptops/'.$id);
   }
+  // Visualizza form di modifica di un laptop esistente
   public function editForm($id) {
     Auth::require();
     $model = new Laptop();
@@ -121,6 +131,7 @@ class LaptopController {
     $selected = $model->softwareIds($id);
     Helpers::view('laptops/form', ['title'=>'Modifica Laptop','customers'=>$customers,'groups'=>$groups,'laptop'=>$laptop,'softwares'=>$softwares,'selected_software_ids'=>$selected]);
   }
+  // Aggiorna i dati di un laptop e registra eventuale cambio stato
   public function update($id) {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
@@ -172,6 +183,7 @@ class LaptopController {
     \App\Services\ViewCardService::refreshLaptops();
     Helpers::redirect('/laptops/'.$id);
   }
+  // Elimina un laptop, registra log e aggiorna le card
   public function delete($id) {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
@@ -184,6 +196,7 @@ class LaptopController {
     Helpers::redirect('/laptops');
   }
 
+  // Esporta la lista completa dei laptop in CSV
   public function export() {
     Auth::require();
     $model = new Laptop();
@@ -233,6 +246,7 @@ class LaptopController {
     exit;
   }
 
+  // Importa laptop da file CSV e applica aggiornamenti massivi
   public function import() {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }

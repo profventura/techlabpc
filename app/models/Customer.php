@@ -1,6 +1,12 @@
 <?php
+/*
+  File: Customer.php
+  Scopo: Modello per la gestione dei Docenti/Clienti.
+  Spiegazione: Fornisce metodi di elenco, conteggi PC, pagamenti associati e CRUD.
+*/
 namespace App\Models;
 class Customer extends Model {
+  // Elenco docenti con conteggi aggregati (PC assegnati, PC pagati) tramite JOIN
   public function all() {
     $sql = 'SELECT c.*,
       COALESCE(l.laptops_count,0) AS laptops_count,
@@ -21,6 +27,7 @@ class Customer extends Model {
     $st = $this->pdo->query($sql);
     return $st->fetchAll();
   }
+  // Docenti disponibili per assegnazione di nuovi PC (non hanno raggiunto la richiesta)
   public function availableForLaptop($include_id = null) {
     $sql = 'SELECT c.*, (SELECT COUNT(*) FROM laptops l WHERE l.customer_id=c.id) AS laptops_count
             FROM customers c
@@ -42,41 +49,49 @@ class Customer extends Model {
     });
     return $rows;
   }
+  // Restituisce conteggi richiesti/assegnati per un docente
   public function counts($customer_id) {
     $st = $this->pdo->prepare('SELECT pc_requested_count AS requested, (SELECT COUNT(*) FROM laptops l WHERE l.customer_id=?) AS assigned FROM customers WHERE id=?');
     $st->execute([$customer_id,$customer_id]);
     return $st->fetch() ?: ['requested'=>0,'assigned'=>0];
   }
+  // Verifica se si può assegnare un PC al docente (rispettando il limite richiesto)
   public function canAssignLaptop($customer_id, $current_laptop_customer_id = null) {
     if (!$customer_id) return true;
     if ($current_laptop_customer_id && (int)$customer_id === (int)$current_laptop_customer_id) return true;
     $c = $this->counts($customer_id);
     return (int)$c['assigned'] < (int)$c['requested'];
   }
+  // Trova docente per ID
   public function find($id) {
     $st = $this->pdo->prepare('SELECT * FROM customers WHERE id=?');
     $st->execute([$id]);
     return $st->fetch();
   }
+  // Elenco PC associati al docente
   public function laptops($id) {
     $st = $this->pdo->prepare('SELECT * FROM laptops WHERE customer_id=? ORDER BY code');
     $st->execute([$id]);
     return $st->fetchAll();
   }
+  // Elenco pagamenti associati al docente
   public function payments($id) {
     $st = $this->pdo->prepare('SELECT * FROM payment_transfers WHERE customer_id=? ORDER BY paid_at DESC');
     $st->execute([$id]);
     return $st->fetchAll();
   }
+  // Crea nuovo docente
   public function create($data) {
     $st = $this->pdo->prepare('INSERT INTO customers (first_name,last_name,email,notes,pc_requested_count) VALUES (?,?,?,?,?)');
     $st->execute([$data['first_name'],$data['last_name'],$data['email'],$data['notes'],$data['pc_requested_count'] ?? 0]);
     return $this->pdo->lastInsertId();
   }
+  // Aggiorna docente
   public function update($id,$data) {
     $st = $this->pdo->prepare('UPDATE customers SET first_name=?, last_name=?, email=?, notes=?, pc_requested_count=? WHERE id=?');
     $st->execute([$data['first_name'],$data['last_name'],$data['email'],$data['notes'],$data['pc_requested_count'] ?? 0,$id]);
   }
+  // Elimina docente
   public function delete($id) {
     $st = $this->pdo->prepare('DELETE FROM customers WHERE id=?');
     $st->execute([$id]);

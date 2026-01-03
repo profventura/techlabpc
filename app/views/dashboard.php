@@ -1,3 +1,7 @@
+<!--
+  Vista: dashboard.php
+  Scopo: Panoramica dei principali indicatori (PC, stati lavorazione, docenti, studenti, gruppi).
+-->
 <h2 class="mb-4">Dashboard</h2>
 <div class="row">
   <div class="col-lg-4">
@@ -107,6 +111,7 @@
   </div>
 </div>
 <script>
+  // Aggiorna asincronamente i conteggi delle card (scope dashboard) utilizzando l’endpoint /api/view-cards
   document.addEventListener('DOMContentLoaded', function(){
     fetch('<?php echo \App\Core\Helpers::url('/api/view-cards'); ?>?scope=dashboard').then(function(r){ return r.json(); }).then(function(data){
       if (data && data.metrics) {

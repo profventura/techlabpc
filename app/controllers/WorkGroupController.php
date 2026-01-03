@@ -1,4 +1,9 @@
 <?php
+/*
+  File: WorkGroupController.php
+  Scopo: Gestisce i Gruppi di lavoro (lista, dettagli, creazione/modifica, gestione membri, import/export).
+  Spiegazione: Coordina il modello WorkGroup, i membri e i laptop associati, aggiornando le card riepilogative.
+*/
 namespace App\Controllers;
 use App\Core\Auth;
 use App\Core\CSRF;
@@ -7,6 +12,7 @@ use App\Models\WorkGroup;
 use App\Models\Student;
 use App\Models\Laptop;
 class WorkGroupController {
+  // Lista dei gruppi con riepilogo card
   public function index() {
     Auth::require();
     $groups = (new WorkGroup())->all();
@@ -24,6 +30,7 @@ class WorkGroupController {
     $summary = ['groups'=>$m['groups'] ?? count($groups),'students'=>$m['students'] ?? 0,'laptops'=>$m['laptops'] ?? 0];
     Helpers::view('work_groups/index', ['title'=>'Gruppi','groups'=>$groups,'summary'=>$summary]);
   }
+  // Mostra il dettaglio del gruppo con membri e laptop associati
   public function show($id) {
     Auth::require();
     $wg = new WorkGroup();
@@ -32,12 +39,14 @@ class WorkGroupController {
     $laptops = $wg->laptops($id);
     Helpers::view('work_groups/show', ['title'=>'Gruppo','group'=>$group,'members'=>$members,'laptops'=>$laptops]);
   }
+  // Visualizza form di creazione nuovo gruppo (solo admin)
   public function createForm() {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
     $students = (new Student())->withoutGroup();
     Helpers::view('work_groups/form', ['title'=>'Nuovo Gruppo','group'=>null,'students'=>$students]);
   }
+  // Salva nuovo gruppo, imposta leader e aggiorna card
   public function store() {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -49,6 +58,7 @@ class WorkGroupController {
     \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/work-groups/'.$id);
   }
+  // Visualizza form di modifica gruppo
   public function editForm($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -56,6 +66,7 @@ class WorkGroupController {
     $students = (new Student())->all();
     Helpers::view('work_groups/form', ['title'=>'Modifica Gruppo','group'=>$group,'students'=>$students]);
   }
+  // Aggiorna gruppo, imposta leader e aggiorna card
   public function update($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -67,6 +78,7 @@ class WorkGroupController {
     \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/work-groups/'.$id);
   }
+  // Aggiunge un membro al gruppo, con gestione ruolo leader/installer
   public function addMember($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -91,6 +103,7 @@ class WorkGroupController {
     \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/work-groups/'.$id);
   }
+  // Rimuove un membro, garantendo la presenza di almeno un leader
   public function removeMember($id) {
     Auth::require();
     if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -109,6 +122,7 @@ class WorkGroupController {
     \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/work-groups/'.$id);
   }
+  // Esporta gruppi in CSV
   public function export() {
     Auth::require();
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
@@ -125,6 +139,7 @@ class WorkGroupController {
     (new \App\Models\Log())->addAction('update_group', \App\Core\Auth::user()['id'] ?? null, ['note'=>'export '.count($groups).' items']);
     exit;
   }
+  // Importa gruppi da CSV e aggiorna card
   public function import() {
     Auth::require();
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }

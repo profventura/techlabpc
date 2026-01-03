@@ -1,10 +1,16 @@
 <?php
+/*
+  File: CustomerController.php
+  Scopo: Gestisce le operazioni sui Docenti (lista, dettaglio, creazione, modifica, eliminazione, import/export).
+  Spiegazione: Coordina il modello Customer e le relative viste, aggiornando anche le card riepilogative.
+*/
 namespace App\Controllers;
 use App\Core\Auth;
 use App\Core\CSRF;
 use App\Core\Helpers;
 use App\Models\Customer;
 class CustomerController {
+  // Lista dei docenti con riepilogo card
   public function index() {
     Auth::require();
     $customers = (new Customer())->all();
@@ -22,6 +28,7 @@ class CustomerController {
     $summary = ['docenti'=>$m['docenti'] ?? 0,'pc_richiesti'=>$m['pc_richiesti'] ?? 0,'pc_assegnati'=>$m['pc_assegnati'] ?? 0,'pc_pagati'=>$m['pc_pagati'] ?? 0];
     Helpers::view('customers/index', ['title'=>'Docenti','customers'=>$customers,'summary'=>$summary]);
   }
+  // Mostra il dettaglio di un docente con i PC e i pagamenti associati
   public function show($id) {
     Auth::require();
     $m = new Customer();
@@ -30,10 +37,12 @@ class CustomerController {
     $payments = $m->payments($id);
     Helpers::view('customers/show', ['title'=>'Docente','customer'=>$c,'laptops'=>$laptops,'payments'=>$payments]);
   }
+  // Visualizza form di creazione nuovo docente
   public function createForm() {
     Auth::require();
     Helpers::view('customers/form', ['title'=>'Nuovo Docente','customer'=>null]);
   }
+  // Salva nuovo docente, registra log e aggiorna le card
   public function store() {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
@@ -44,11 +53,13 @@ class CustomerController {
     \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/customers/'.$id);
   }
+  // Visualizza form di modifica docente
   public function editForm($id) {
     Auth::require();
     $c = (new Customer())->find($id);
     Helpers::view('customers/form', ['title'=>'Modifica Docente','customer'=>$c]);
   }
+  // Aggiorna docente, registra log e aggiorna le card
   public function update($id) {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
@@ -59,6 +70,7 @@ class CustomerController {
     \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/customers/'.$id);
   }
+  // Elimina docente, registra log e aggiorna le card
   public function delete($id) {
     Auth::require();
     if (!\App\Core\Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
@@ -70,6 +82,7 @@ class CustomerController {
     Helpers::redirect('/customers');
   }
 
+  // Esporta i docenti in CSV
   public function export() {
     Auth::require();
     $pdo = \App\Core\DB::conn();
@@ -99,6 +112,7 @@ class CustomerController {
     exit;
   }
 
+  // Importa docenti da CSV e aggiorna le card
   public function import() {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
