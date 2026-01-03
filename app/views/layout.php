@@ -10,14 +10,18 @@ $config = require __DIR__ . '/../config.php';
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="shortcut icon" type="image/png" href="<?php echo Helpers::url('public/images/logos/favicon.png'); ?>?v=<?php echo time(); ?>" />
+  <link rel="stylesheet" href="<?php echo Helpers::url('public/css/fonts-manrope.css'); ?>" />
   <link rel="stylesheet" href="<?php echo Helpers::url('public/css/styles.css'); ?>" />
+  <link rel="preload" href="<?php echo Helpers::url('public/libs/iconify/solar.json'); ?>" as="fetch">
+  <link rel="preload" href="<?php echo Helpers::url('public/fonts/tabler-icons/fonts/tabler-icons.woff2?v2.11.0'); ?>" as="font" type="font/woff2" crossorigin>
   <title><?php echo htmlspecialchars($title ?? 'TechLab PC'); ?></title>
 </head>
 <body class="link-sidebar">
-  <!-- Preloader -->
+  <!-- Preloader
   <div class="preloader">
-    <img src="<?php echo Helpers::url('public/images/logos/favicon.png'); ?>" alt="loader" class="lds-ripple img-fluid" />
+    <img src="<?php //echo Helpers::url('public/images/logos/favicon.png'); ?>" alt="loader" class="lds-ripple img-fluid" />
   </div>
+  -->
   <div id="main-wrapper">
     <?php if ($template === 'login') { ?>
       <div class="position-relative overflow-hidden radial-gradient min-vh-100 w-100">
