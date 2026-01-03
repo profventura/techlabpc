@@ -278,12 +278,21 @@ $config = require __DIR__ . '/../config.php';
   <div class="dark-transparent sidebartoggler"></div>
   <script src="<?php echo Helpers::url('public/libs/bootstrap/dist/js/bootstrap.bundle.min.js'); ?>"></script>
   <script src="<?php echo Helpers::url('public/libs/simplebar/dist/simplebar.min.js'); ?>"></script>
-  <script src="<?php echo Helpers::url('public/js/theme/app.init.js'); ?>?v=<?php echo time(); ?>"></script>
-  <script src="<?php echo Helpers::url('public/js/theme/theme.js'); ?>?v=<?php echo time(); ?>"></script>
-  <script src="<?php echo Helpers::url('public/js/theme/app.min.js'); ?>?v=<?php echo time(); ?>"></script>
-  <script src="<?php echo Helpers::url('public/js/theme/sidebarmenu-default.js'); ?>?v=<?php echo time(); ?>"></script>
-  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
-  <script src="<?php echo Helpers::url('public/js/highlights/highlight.min.js'); ?>?v=<?php echo time(); ?>"></script>
+  <script src="<?php echo Helpers::url('public/js/theme/app.init.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/js/theme/theme.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/js/theme/app.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/js/theme/sidebarmenu-default.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/iconify/iconify-icon.min.js'); ?>"></script>
+  <script>
+    (function () {
+      var u = '<?php echo Helpers::url('public/libs/iconify/solar.json'); ?>';
+      fetch(u).then(function (r) { return r.json(); }).then(function (col) {
+        var api = window.Iconify || window.IconifyIcon;
+        if (api && api.addCollection) { api.addCollection(col); }
+      });
+    })();
+  </script>
+  <script src="<?php echo Helpers::url('public/js/highlights/highlight.min.js'); ?>"></script>
   <?php
     $dtTemplates = [
       'students/index',
@@ -296,17 +305,17 @@ $config = require __DIR__ . '/../config.php';
     ];
     if (in_array(($template ?? ''), $dtTemplates, true)) {
   ?>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <link rel="stylesheet" href="<?php echo Helpers::url('public/libs/datatables/jquery.dataTables.min.css'); ?>">
+  <link rel="stylesheet" href="<?php echo Helpers::url('public/libs/datatables-buttons/buttons.dataTables.min.css'); ?>">
+  <script src="<?php echo Helpers::url('public/libs/jquery/jquery-3.7.1.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/datatables/jquery.dataTables.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/datatables-buttons/dataTables.buttons.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/datatables-buttons/buttons.html5.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/datatables-buttons/buttons.print.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/datatables-buttons/buttons.colVis.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/jszip/jszip.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/pdfmake/pdfmake.min.js'); ?>"></script>
+  <script src="<?php echo Helpers::url('public/libs/pdfmake/vfs_fonts.js'); ?>"></script>
   <?php } ?>
   <script>
   hljs.initHighlightingOnLoad();

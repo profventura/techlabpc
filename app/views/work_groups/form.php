@@ -5,12 +5,12 @@
       <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
       <div class="row">
         <div class="col-md-6 mb-3">
-            <label class="form-label">Nome gruppo</label>
-            <input type="text" class="form-control" name="name" value="<?php echo htmlspecialchars($group['name']??''); ?>" required>
+            <label class="form-label" for="group_name">Nome gruppo</label>
+            <input type="text" class="form-control" id="group_name" name="name" value="<?php echo htmlspecialchars($group['name']??''); ?>" required autocomplete="off">
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label">Responsabile</label>
-            <select class="form-select" name="leader_student_id" required>
+            <label class="form-label" for="leader_student_id">Responsabile</label>
+            <select class="form-select" id="leader_student_id" name="leader_student_id" required>
               <?php foreach ($students as $s) { ?>
                 <option value="<?php echo $s['id']; ?>" <?php echo (($group['leader_student_id']??'')==$s['id'])?'selected':''; ?>><?php echo htmlspecialchars($s['last_name'].' '.$s['first_name']); ?></option>
               <?php } ?>

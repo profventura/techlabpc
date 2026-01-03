@@ -5,24 +5,24 @@
       <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label class="form-label">Nome</label>
-          <input type="text" class="form-control" name="first_name" value="<?php echo htmlspecialchars($student['first_name']??''); ?>" required>
+          <label class="form-label" for="student_first_name">Nome</label>
+          <input type="text" class="form-control" id="student_first_name" name="first_name" value="<?php echo htmlspecialchars($student['first_name']??''); ?>" required autocomplete="given-name">
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Cognome</label>
-          <input type="text" class="form-control" name="last_name" value="<?php echo htmlspecialchars($student['last_name']??''); ?>" required>
+          <label class="form-label" for="student_last_name">Cognome</label>
+          <input type="text" class="form-control" id="student_last_name" name="last_name" value="<?php echo htmlspecialchars($student['last_name']??''); ?>" required autocomplete="family-name">
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($student['email']??''); ?>" required>
+          <label class="form-label" for="student_email">Email</label>
+          <input type="email" class="form-control" id="student_email" name="email" value="<?php echo htmlspecialchars($student['email']??''); ?>" required autocomplete="email" inputmode="email">
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control" name="password" placeholder="<?php echo $student ? 'Lascia vuoto per non cambiare' : ''; ?>">
+          <label class="form-label" for="student_password">Password</label>
+          <input type="password" class="form-control" id="student_password" name="password" placeholder="<?php echo $student ? 'Lascia vuoto per non cambiare' : ''; ?>" autocomplete="new-password">
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Ruolo</label>
-          <select class="form-select" name="role">
+          <label class="form-label" for="student_role">Ruolo</label>
+          <select class="form-select" id="student_role" name="role">
             <option value="student" <?php echo (($student['role']??'student')==='student')?'selected':''; ?>>Studente</option>
             <option value="admin" <?php echo (($student['role']??'student')==='admin')?'selected':''; ?>>Admin</option>
           </select>

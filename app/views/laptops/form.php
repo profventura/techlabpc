@@ -5,41 +5,41 @@
       <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label class="form-label">Codice</label>
-          <input type="text" class="form-control" name="code" value="<?php echo htmlspecialchars($laptop['code']??''); ?>" required>
+          <label class="form-label" for="code">Codice</label>
+          <input type="text" class="form-control" id="code" name="code" value="<?php echo htmlspecialchars($laptop['code']??''); ?>" required autocomplete="off">
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Modello</label>
-          <input type="text" class="form-control" name="brand_model" value="<?php echo htmlspecialchars($laptop['brand_model']??''); ?>" required>
+          <label class="form-label" for="brand_model">Modello</label>
+          <input type="text" class="form-control" id="brand_model" name="brand_model" value="<?php echo htmlspecialchars($laptop['brand_model']??''); ?>" required autocomplete="off">
         </div>
       </div>
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label class="form-label">CPU</label>
-          <input type="text" class="form-control" name="cpu" value="<?php echo htmlspecialchars($laptop['cpu']??''); ?>">
+          <label class="form-label" for="cpu">CPU</label>
+          <input type="text" class="form-control" id="cpu" name="cpu" value="<?php echo htmlspecialchars($laptop['cpu']??''); ?>" autocomplete="off">
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">RAM</label>
-          <input type="text" class="form-control" name="ram" value="<?php echo htmlspecialchars($laptop['ram']??''); ?>">
+          <label class="form-label" for="ram">RAM</label>
+          <input type="text" class="form-control" id="ram" name="ram" value="<?php echo htmlspecialchars($laptop['ram']??''); ?>" autocomplete="off">
         </div>
       </div>
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label class="form-label">Storage</label>
-          <input type="text" class="form-control" name="storage" value="<?php echo htmlspecialchars($laptop['storage']??''); ?>">
+          <label class="form-label" for="storage">Storage</label>
+          <input type="text" class="form-control" id="storage" name="storage" value="<?php echo htmlspecialchars($laptop['storage']??''); ?>" autocomplete="off">
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Schermo</label>
-          <input type="text" class="form-control" name="screen" value="<?php echo htmlspecialchars($laptop['screen']??''); ?>">
+          <label class="form-label" for="screen">Schermo</label>
+          <input type="text" class="form-control" id="screen" name="screen" value="<?php echo htmlspecialchars($laptop['screen']??''); ?>" autocomplete="off">
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Note tecniche</label>
-        <textarea class="form-control" name="tech_notes" rows="3"><?php echo htmlspecialchars($laptop['tech_notes']??''); ?></textarea>
+        <label class="form-label" for="tech_notes">Note tecniche</label>
+        <textarea class="form-control" id="tech_notes" name="tech_notes" rows="3" autocomplete="off"><?php echo htmlspecialchars($laptop['tech_notes']??''); ?></textarea>
       </div>
       <div class="mb-3">
-        <label class="form-label">Graffi</label>
-        <textarea class="form-control" name="scratches" rows="2"><?php echo htmlspecialchars($laptop['scratches']??''); ?></textarea>
+        <label class="form-label" for="scratches">Graffi</label>
+        <textarea class="form-control" id="scratches" name="scratches" rows="2" autocomplete="off"><?php echo htmlspecialchars($laptop['scratches']??''); ?></textarea>
       </div>
       <div class="row">
         <div class="col-md-6 mb-3">
@@ -77,14 +77,16 @@
             <div class="d-flex align-items-center mb-2">
               <input class="form-check-input me-2" type="checkbox" data-name="Windows" name="software_ids[]" id="soft_<?php echo $s['id']; ?>" value="<?php echo $s['id']; ?>" <?php echo $checked?'checked':''; ?>>
               <label class="form-check-label text-nowrap me-3" for="soft_<?php echo $s['id']; ?>" style="min-width:160px;height:38px;line-height:38px"><?php echo htmlspecialchars('Windows'.($s['version']?' '.$s['version']:'')); ?></label>
-              <input type="text" class="form-control" id="windows_license" name="windows_license" placeholder="Licenza Windows" value="<?php echo htmlspecialchars($laptop['windows_license']??''); ?>" style="width:260px; flex:0 0 260px; height:38px">
+              <label for="windows_license" class="visually-hidden">Licenza Windows</label>
+              <input type="text" class="form-control" id="windows_license" name="windows_license" placeholder="Licenza Windows" value="<?php echo htmlspecialchars($laptop['windows_license']??''); ?>" style="width:260px; flex:0 0 260px; height:38px" autocomplete="off">
             </div>
           <?php }} ?>
           <?php foreach (($softwares??[]) as $s) { if ($s['name']==='Office') { $checked = in_array($s['id'], ($selected_software_ids??[])); ?>
             <div class="d-flex align-items-center mb-2">
               <input class="form-check-input me-2" type="checkbox" data-name="Office" name="software_ids[]" id="soft_<?php echo $s['id']; ?>" value="<?php echo $s['id']; ?>" <?php echo $checked?'checked':''; ?>>
               <label class="form-check-label text-nowrap me-3" for="soft_<?php echo $s['id']; ?>" style="min-width:160px;height:38px;line-height:38px"><?php echo htmlspecialchars('Office'.($s['version']?' '.$s['version']:'')); ?></label>
-              <input type="text" class="form-control" id="office_license" name="office_license" placeholder="Licenza Office" value="<?php echo htmlspecialchars($laptop['office_license']??''); ?>" style="width:260px; flex:0 0 260px; height:38px">
+              <label for="office_license" class="visually-hidden">Licenza Office</label>
+              <input type="text" class="form-control" id="office_license" name="office_license" placeholder="Licenza Office" value="<?php echo htmlspecialchars($laptop['office_license']??''); ?>" style="width:260px; flex:0 0 260px; height:38px" autocomplete="off">
             </div>
           <?php }} ?>
           <?php foreach (($softwares??[]) as $s) { if ($s['name']!=='Windows' && $s['name']!=='Office') { $checked = in_array($s['id'], ($selected_software_ids??[])); ?>
@@ -102,8 +104,8 @@
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Note software</label>
-        <textarea class="form-control" name="other_software_request" rows="2"><?php echo htmlspecialchars($laptop['other_software_request']??''); ?></textarea>
+        <label class="form-label" for="other_software_request">Note software</label>
+        <textarea class="form-control" id="other_software_request" name="other_software_request" rows="2" autocomplete="off"><?php echo htmlspecialchars($laptop['other_software_request']??''); ?></textarea>
       </div>
       <script>
       (function(){

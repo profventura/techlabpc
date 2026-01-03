@@ -5,7 +5,7 @@
       <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
       <div class="row">
         <div class="col-md-6 mb-3">
-            <label class="form-label">Docente</label>
+            <label class="form-label" for="customer_id">Docente</label>
             <select class="form-select" name="customer_id" id="customer_id" required>
               <?php foreach ($customers as $c) { ?>
                 <option value="<?php echo $c['id']; ?>" <?php echo (isset($payment['customer_id']) && $payment['customer_id']==$c['id'])?'selected':''; ?>><?php echo htmlspecialchars($c['last_name'].' '.$c['first_name']); ?></option>
@@ -13,16 +13,16 @@
             </select>
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label">Importo</label>
-            <input type="number" step="0.01" class="form-control" name="amount" required value="<?php echo htmlspecialchars($payment['amount']??''); ?>">
+            <label class="form-label" for="amount">Importo</label>
+            <input type="number" step="0.01" class="form-control" id="amount" name="amount" required value="<?php echo htmlspecialchars($payment['amount']??''); ?>" autocomplete="off">
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label">Data</label>
-            <input type="date" class="form-control" name="paid_at" required value="<?php echo htmlspecialchars($payment['paid_at']??''); ?>">
+            <label class="form-label" for="paid_at">Data</label>
+            <input type="date" class="form-control" id="paid_at" name="paid_at" required value="<?php echo htmlspecialchars($payment['paid_at']??''); ?>" autocomplete="off">
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label">Riferimento</label>
-            <input type="text" class="form-control" name="reference" value="<?php echo htmlspecialchars($payment['reference']??''); ?>">
+            <label class="form-label" for="reference">Riferimento</label>
+            <input type="text" class="form-control" id="reference" name="reference" value="<?php echo htmlspecialchars($payment['reference']??''); ?>" autocomplete="off">
         </div>
         <div class="col-md-6 mb-3">
             <label class="form-label" for="receipt">Contabile</label>
