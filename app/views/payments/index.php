@@ -7,7 +7,7 @@
           <iconify-icon icon="solar:users-group-rounded-line-duotone" class="icon-24 text-white"></iconify-icon>
         </div>
         <h5 class="card-title fw-semibold text-center mb-1">Numero docenti</h5>
-        <h2 class="card-text text-secondary text-center"><?php echo (int)($summary['customers'] ?? 0); ?></h2>
+        <h2 class="card-text text-secondary text-center metric-value" data-metric="customers"><?php echo (int)($summary['customers'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
@@ -18,7 +18,7 @@
           <iconify-icon icon="solar:laptop-minimalistic-line-duotone" class="icon-24 text-white"></iconify-icon>
         </div>
         <h5 class="card-title fw-semibold text-center mb-1">Numero PC richiesti</h5>
-        <h2 class="card-text text-warning text-center"><?php echo (int)($summary['pcs_requested'] ?? 0); ?></h2>
+        <h2 class="card-text text-warning text-center metric-value" data-metric="pcs_requested"><?php echo (int)($summary['pcs_requested'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
@@ -29,7 +29,7 @@
           <iconify-icon icon="solar:card-line-duotone" class="icon-24 text-white"></iconify-icon>
         </div>
         <h5 class="card-title fw-semibold text-center mb-1">Numero PC pagati</h5>
-        <h2 class="card-text text-info text-center"><?php echo (int)($summary['pcs_paid'] ?? 0); ?></h2>
+        <h2 class="card-text text-info text-center metric-value" data-metric="pcs_paid"><?php echo (int)($summary['pcs_paid'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
@@ -69,6 +69,8 @@
     var $ = window.jQuery;
     $('#paymentsTable').DataTable({
       responsive: true,
+      deferRender: true,
+      autoWidth: false,
       pageLength: 10,
       lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
       order: [],
@@ -105,6 +107,15 @@
     var lsel = wrap.find('.dataTables_length select');
     var lid = t.id + '_length';
     lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+    fetch('<?php echo \App\Core\Helpers::url('/api/view-cards'); ?>?scope=payments').then(function(r){ return r.json(); }).then(function(data){
+      if (data && data.metrics) {
+        var ms = document.querySelectorAll('.metric-value');
+        ms.forEach(function(el){
+          var m = el.getAttribute('data-metric');
+          if (m && Object.prototype.hasOwnProperty.call(data.metrics, m)) { el.textContent = parseInt(data.metrics[m], 10) || 0; }
+        });
+      }
+    }).catch(function(){});
   });
 </script>
 <div class="modal fade" id="deletePaymentModal" tabindex="-1" aria-hidden="true">

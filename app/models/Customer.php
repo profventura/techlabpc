@@ -2,10 +2,23 @@
 namespace App\Models;
 class Customer extends Model {
   public function all() {
-    $st = $this->pdo->query('SELECT customers.*,
-      (SELECT COUNT(*) FROM laptops l WHERE l.customer_id=customers.id) AS laptops_count,
-      (SELECT COALESCE(SUM(pt.pcs_paid_count),0) FROM payment_transfers pt WHERE pt.customer_id=customers.id AND pt.status=\'verified\') AS pcs_paid_total
-      FROM customers ORDER BY last_name, first_name');
+    $sql = 'SELECT c.*,
+      COALESCE(l.laptops_count,0) AS laptops_count,
+      COALESCE(pt.pcs_paid_total,0) AS pcs_paid_total
+      FROM customers c
+      LEFT JOIN (
+        SELECT customer_id, COUNT(*) AS laptops_count
+        FROM laptops
+        GROUP BY customer_id
+      ) l ON l.customer_id = c.id
+      LEFT JOIN (
+        SELECT customer_id, COALESCE(SUM(pcs_paid_count),0) AS pcs_paid_total
+        FROM payment_transfers
+        WHERE status = \'verified\'
+        GROUP BY customer_id
+      ) pt ON pt.customer_id = c.id
+      ORDER BY c.last_name, c.first_name';
+    $st = $this->pdo->query($sql);
     return $st->fetchAll();
   }
   public function availableForLaptop($include_id = null) {

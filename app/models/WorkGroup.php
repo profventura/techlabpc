@@ -2,10 +2,23 @@
 namespace App\Models;
 class WorkGroup extends Model {
   public function all() {
-    $st = $this->pdo->query('SELECT wg.*, s.first_name AS leader_first_name, s.last_name AS leader_last_name,
-      (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id=wg.id) AS members_count,
-      (SELECT COUNT(*) FROM laptops l WHERE l.group_id=wg.id) AS laptops_count
-      FROM work_groups wg JOIN students s ON wg.leader_student_id=s.id ORDER BY wg.name');
+    $sql = 'SELECT wg.*, s.first_name AS leader_first_name, s.last_name AS leader_last_name,
+      COALESCE(gm.members_count,0) AS members_count,
+      COALESCE(lp.laptops_count,0) AS laptops_count
+      FROM work_groups wg
+      JOIN students s ON wg.leader_student_id = s.id
+      LEFT JOIN (
+        SELECT group_id, COUNT(*) AS members_count
+        FROM group_members
+        GROUP BY group_id
+      ) gm ON gm.group_id = wg.id
+      LEFT JOIN (
+        SELECT group_id, COUNT(*) AS laptops_count
+        FROM laptops
+        GROUP BY group_id
+      ) lp ON lp.group_id = wg.id
+      ORDER BY wg.name';
+    $st = $this->pdo->query($sql);
     return $st->fetchAll();
   }
   public function find($id) {

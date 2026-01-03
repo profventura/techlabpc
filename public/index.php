@@ -123,4 +123,33 @@ $router->post('/software', [SoftwareController::class,'store']);
 $router->get('/software/{id}/edit', [SoftwareController::class,'editForm']);
 $router->post('/software/{id}/update', [SoftwareController::class,'update']);
 $router->post('/software/{id}/delete', [SoftwareController::class,'delete']);
+$router->get('/api/view-cards', function(){
+  if (!Auth::check()) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); return; }
+  header('Content-Type: application/json');
+  $scope = $_GET['scope'] ?? '';
+  $scope = is_string($scope) ? trim($scope) : '';
+  if ($scope === '') { echo json_encode(['error'=>'scope_required']); return; }
+  $pdo = DB::conn();
+  $stmt = $pdo->prepare('SELECT metric, value FROM view_cards WHERE scope=?');
+  $stmt->execute([$scope]);
+  $rows = $stmt->fetchAll();
+  if (!$rows) {
+    try {
+      switch ($scope) {
+        case 'dashboard': ViewCardService::refreshDashboard(); break;
+        case 'customers': ViewCardService::refreshCustomers(); break;
+        case 'students': ViewCardService::refreshStudents(); break;
+        case 'groups': ViewCardService::refreshGroups(); break;
+        case 'payments': ViewCardService::refreshPayments(); break;
+        case 'laptops': ViewCardService::refreshLaptops(); break;
+        case 'software': ViewCardService::refreshSoftware(); break;
+      }
+      $stmt->execute([$scope]);
+      $rows = $stmt->fetchAll();
+    } catch (\Throwable $e) {}
+  }
+  $out = [];
+  foreach ($rows as $r) { $out[$r['metric']] = (int)$r['value']; }
+  echo json_encode(['scope'=>$scope,'metrics'=>$out]);
+});
 $router->dispatch();

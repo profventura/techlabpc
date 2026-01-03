@@ -62,6 +62,8 @@
     var $ = window.jQuery;
     $('#accessLogsTable').DataTable({
       responsive: true,
+      deferRender: true,
+      autoWidth: false,
       pageLength: <?php echo (isset($len_access) && (int)$len_access !== 0 ? (int)$len_access : 10); ?>,
       lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
       order: [],
@@ -97,6 +99,8 @@
     lsel1.attr({ id: lid1, name: lid1, 'aria-label': 'Numero righe' });
     $('#actionLogsTable').DataTable({
       responsive: true,
+      deferRender: true,
+      autoWidth: false,
       pageLength: <?php echo (isset($len_actions) && (int)$len_actions !== 0 ? (int)$len_actions : 10); ?>,
       lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
       order: [],

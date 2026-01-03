@@ -7,7 +7,7 @@
           <iconify-icon icon="solar:users-group-two-rounded-line-duotone" class="icon-24 text-white"></iconify-icon>
         </div>
         <h5 class="card-title fw-semibold text-center mb-1">Numero gruppi</h5>
-        <h2 class="card-text text-info text-center"><?php echo (int)($summary['groups'] ?? 0); ?></h2>
+        <h2 class="card-text text-info text-center metric-value" data-metric="groups"><?php echo (int)($summary['groups'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
@@ -18,7 +18,7 @@
           <iconify-icon icon="solar:user-circle-line-duotone" class="icon-24 text-white"></iconify-icon>
         </div>
         <h5 class="card-title fw-semibold text-center mb-1">Numero studenti</h5>
-        <h2 class="card-text text-primary text-center"><?php echo (int)($summary['students'] ?? 0); ?></h2>
+        <h2 class="card-text text-primary text-center metric-value" data-metric="students"><?php echo (int)($summary['students'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
@@ -29,7 +29,7 @@
           <iconify-icon icon="solar:laptop-minimalistic-line-duotone" class="icon-24 text-white"></iconify-icon>
         </div>
         <h5 class="card-title fw-semibold text-center mb-1">Numero PC assegnati</h5>
-        <h2 class="card-text text-secondary text-center"><?php echo (int)($summary['laptops'] ?? 0); ?></h2>
+        <h2 class="card-text text-secondary text-center metric-value" data-metric="laptops"><?php echo (int)($summary['laptops'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
@@ -68,6 +68,8 @@
     var $ = window.jQuery;
     $('#workGroupsTable').DataTable({
       responsive: true,
+      deferRender: true,
+      autoWidth: false,
       pageLength: 10,
       lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
       order: [],
@@ -104,6 +106,15 @@
     var lsel = wrap.find('.dataTables_length select');
     var lid = t.id + '_length';
     lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+    fetch('<?php echo \App\Core\Helpers::url('/api/view-cards'); ?>?scope=groups').then(function(r){ return r.json(); }).then(function(data){
+      if (data && data.metrics) {
+        var ms = document.querySelectorAll('.metric-value');
+        ms.forEach(function(el){
+          var m = el.getAttribute('data-metric');
+          if (m && Object.prototype.hasOwnProperty.call(data.metrics, m)) { el.textContent = parseInt(data.metrics[m], 10) || 0; }
+        });
+      }
+    }).catch(function(){});
   });
 </script>
 <?php if (\App\Core\Auth::isAdmin()) { ?>

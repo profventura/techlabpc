@@ -7,7 +7,7 @@
           <iconify-icon icon="solar:inbox-in-line-duotone" class="icon-24 text-white"></iconify-icon>
         </div>
         <h5 class="card-title fw-semibold text-center mb-1">Numero software</h5>
-        <h2 class="card-text text-primary text-center"><?php echo (int)($summary['total'] ?? 0); ?></h2>
+        <h2 class="card-text text-primary text-center metric-value" data-metric="total"><?php echo (int)($summary['total'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
@@ -18,7 +18,7 @@
           <iconify-icon icon="solar:tag-price-line-duotone" class="icon-24 text-white"></iconify-icon>
         </div>
         <h5 class="card-title fw-semibold text-center mb-1">Software free</h5>
-        <h2 class="card-text text-success text-center"><?php echo (int)($summary['free'] ?? 0); ?></h2>
+        <h2 class="card-text text-success text-center metric-value" data-metric="free"><?php echo (int)($summary['free'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
@@ -29,7 +29,7 @@
           <iconify-icon icon="solar:dollar-minimalistic-linear" class="icon-24 text-white"></iconify-icon>
         </div>
         <h5 class="card-title fw-semibold text-center mb-1">Software a pagamento</h5>
-        <h2 class="card-text text-info text-center"><?php echo (int)($summary['paid'] ?? 0); ?></h2>
+        <h2 class="card-text text-info text-center metric-value" data-metric="paid"><?php echo (int)($summary['paid'] ?? 0); ?></h2>
       </div>
     </div>
   </div>
@@ -61,6 +61,8 @@
     var $ = window.jQuery;
     $('#softwareTable').DataTable({
       responsive: true,
+      deferRender: true,
+      autoWidth: false,
       pageLength: 10,
       lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
       order: [],
@@ -97,6 +99,15 @@
     var lsel = wrap.find('.dataTables_length select');
     var lid = t.id + '_length';
     lsel.attr({ id: lid, name: lid, 'aria-label': 'Numero righe' });
+    fetch('<?php echo \App\Core\Helpers::url('/api/view-cards'); ?>?scope=software').then(function(r){ return r.json(); }).then(function(data){
+      if (data && data.metrics) {
+        var ms = document.querySelectorAll('.metric-value');
+        ms.forEach(function(el){
+          var m = el.getAttribute('data-metric');
+          if (m && Object.prototype.hasOwnProperty.call(data.metrics, m)) { el.textContent = parseInt(data.metrics[m], 10) || 0; }
+        });
+      }
+    }).catch(function(){});
   });
 </script>
 

@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS students (
   role ENUM('admin','student') NOT NULL DEFAULT 'student',
   active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_students_role (role),
+  KEY idx_students_active (active)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS work_groups (
@@ -31,7 +33,9 @@ CREATE TABLE IF NOT EXISTS group_members (
   joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_group_member (group_id, student_id),
   CONSTRAINT fk_group_members_group FOREIGN KEY (group_id) REFERENCES work_groups(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_group_members_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE RESTRICT ON UPDATE CASCADE
+  CONSTRAINT fk_group_members_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+  KEY idx_group_members_role (role),
+  KEY idx_group_members_group (group_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS customers (
