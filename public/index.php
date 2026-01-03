@@ -19,6 +19,7 @@ use App\Controllers\WorkGroupController;
 use App\Controllers\PaymentController;
 use App\Controllers\SoftwareController;
 use App\Controllers\LogsController;
+use App\Services\ViewCardService;
 $router = new Router();
 $pdoBootstrap = DB::conn();
 // Ensure superuser admin exists
@@ -39,17 +40,36 @@ $router->get('/logout', [AuthController::class,'logout']);
 $router->get('/', function(){
   if (!Auth::check()) { Helpers::redirect('/login'); }
   $pdo = DB::conn();
-  $counts = [];
-  $counts['laptops_total'] = (int)$pdo->query('SELECT COUNT(*) c FROM laptops')->fetch()['c'];
-  foreach (['ready','in_progress','missing_software','to_check','delivered'] as $st) {
-    $stc = $pdo->prepare('SELECT COUNT(*) c FROM laptops WHERE status=?');
-    $stc->execute([$st]);
-    $counts[$st] = (int)$stc->fetch()['c'];
+  $stmt = $pdo->prepare('SELECT metric, value FROM view_cards WHERE scope=?');
+  $stmt->execute(['dashboard']);
+  $rows = $stmt->fetchAll();
+  if (!$rows) {
+    ViewCardService::refreshDashboard();
+    $stmt->execute(['dashboard']);
+    $rows = $stmt->fetchAll();
   }
-  $counts['customers_total'] = (int)$pdo->query('SELECT COUNT(*) c FROM customers')->fetch()['c'];
-  $counts['students_total'] = (int)$pdo->query('SELECT COUNT(*) c FROM students')->fetch()['c'];
-  $counts['groups_total'] = (int)$pdo->query('SELECT COUNT(*) c FROM work_groups')->fetch()['c'];
+  $counts = [];
+  foreach ($rows as $r) { $counts[$r['metric']] = (int)$r['value']; }
   Helpers::view('dashboard', ['title'=>'Dashboard','counts'=>$counts]);
+});
+$router->get('/admin/migrate', function(){
+  if (!Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
+  $pdo = DB::conn();
+  $dir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'database' . DIRECTORY_SEPARATOR . 'migrations';
+  $files = [];
+  foreach (glob($dir . DIRECTORY_SEPARATOR . '*.sql') as $f) { $files[] = $f; }
+  sort($files);
+  foreach ($files as $file) {
+    $sql = file_get_contents($file);
+    $chunks = array_filter(array_map('trim', preg_split('/;\\s*/', $sql)));
+    foreach ($chunks as $chunk) {
+      if ($chunk === '') continue;
+      try { $pdo->exec($chunk); } catch (\Throwable $e) {}
+    }
+  }
+  \App\Core\Helpers::addFlash('success', 'Migrazioni eseguite');
+  ViewCardService::refreshAll();
+  \App\Core\Helpers::redirect('/');
 });
 $router->get('/laptops', [LaptopController::class,'index']);
 $router->get('/laptops/export', [LaptopController::class,'export']);
@@ -95,6 +115,8 @@ $router->get('/payments/{id}/edit', [PaymentController::class,'editForm']);
 $router->post('/payments/{id}/update', [PaymentController::class,'update']);
 $router->post('/payments/{id}/delete', [PaymentController::class,'delete']);
 $router->get('/logs', [LogsController::class,'index']);
+$router->post('/logs/clear-access', [LogsController::class,'clearAccess']);
+$router->post('/logs/clear-actions', [LogsController::class,'clearActions']);
 $router->get('/software', [SoftwareController::class,'index']);
 $router->get('/software/create', [SoftwareController::class,'createForm']);
 $router->post('/software', [SoftwareController::class,'store']);
@@ -102,4 +124,3 @@ $router->get('/software/{id}/edit', [SoftwareController::class,'editForm']);
 $router->post('/software/{id}/update', [SoftwareController::class,'update']);
 $router->post('/software/{id}/delete', [SoftwareController::class,'delete']);
 $router->dispatch();
-

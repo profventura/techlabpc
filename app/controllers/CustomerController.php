@@ -9,11 +9,17 @@ class CustomerController {
     Auth::require();
     $customers = (new Customer())->all();
     $pdo = \App\Core\DB::conn();
-    $docenti = (int)$pdo->query('SELECT COUNT(*) c FROM customers')->fetch()['c'];
-    $pc_richiesti = (int)$pdo->query('SELECT COALESCE(SUM(pc_requested_count),0) s FROM customers')->fetch()['s'];
-    $pc_assegnati = (int)$pdo->query('SELECT COUNT(*) c FROM laptops WHERE customer_id IS NOT NULL')->fetch()['c'];
-    $pc_pagati = (int)$pdo->query("SELECT COALESCE(SUM(pcs_paid_count),0) s FROM payment_transfers WHERE status='verified'")->fetch()['s'];
-    $summary = ['docenti'=>$docenti,'pc_richiesti'=>$pc_richiesti,'pc_assegnati'=>$pc_assegnati,'pc_pagati'=>$pc_pagati];
+    $stmt = $pdo->prepare('SELECT metric, value FROM view_cards WHERE scope=?');
+    $stmt->execute(['customers']);
+    $rows = $stmt->fetchAll();
+    if (!$rows) {
+      \App\Services\ViewCardService::refreshCustomers();
+      $stmt->execute(['customers']);
+      $rows = $stmt->fetchAll();
+    }
+    $m = [];
+    foreach ($rows as $r) { $m[$r['metric']] = (int)$r['value']; }
+    $summary = ['docenti'=>$m['docenti'] ?? 0,'pc_richiesti'=>$m['pc_richiesti'] ?? 0,'pc_assegnati'=>$m['pc_assegnati'] ?? 0,'pc_pagati'=>$m['pc_pagati'] ?? 0];
     Helpers::view('customers/index', ['title'=>'Docenti','customers'=>$customers,'summary'=>$summary]);
   }
   public function show($id) {
@@ -34,6 +40,8 @@ class CustomerController {
     $data = ['first_name'=>trim($_POST['first_name'] ?? ''),'last_name'=>trim($_POST['last_name'] ?? ''),'email'=>trim($_POST['email'] ?? ''),'notes'=>trim($_POST['notes'] ?? ''),'pc_requested_count'=>intval($_POST['pc_requested_count'] ?? 0)];
     $id = (new Customer())->create($data);
     (new \App\Models\Log())->addAction('create_customer', \App\Core\Auth::user()['id'] ?? null, ['customer_id'=>$id, 'note'=>$data['email']]);
+    \App\Services\ViewCardService::refreshCustomers();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/customers/'.$id);
   }
   public function editForm($id) {
@@ -47,14 +55,18 @@ class CustomerController {
     $data = ['first_name'=>trim($_POST['first_name'] ?? ''),'last_name'=>trim($_POST['last_name'] ?? ''),'email'=>trim($_POST['email'] ?? ''),'notes'=>trim($_POST['notes'] ?? ''),'pc_requested_count'=>intval($_POST['pc_requested_count'] ?? 0)];
     (new Customer())->update($id,$data);
     (new \App\Models\Log())->addAction('update_customer', \App\Core\Auth::user()['id'] ?? null, ['customer_id'=>$id, 'note'=>$data['email']]);
+    \App\Services\ViewCardService::refreshCustomers();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/customers/'.$id);
   }
   public function delete($id) {
     Auth::require();
     if (!\App\Core\Auth::isAdmin()) { http_response_code(403); echo '403'; return; }
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
+    (new \App\Models\Log())->addAction('delete_customer', \App\Core\Auth::user()['id'] ?? null, ['customer_id'=>$id, 'note'=>strval($id)]);
     (new Customer())->delete($id);
-    (new \App\Models\Log())->addAction('delete_customer', \App\Core\Auth::user()['id'] ?? null, ['customer_id'=>$id]);
+    \App\Services\ViewCardService::refreshCustomers();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/customers');
   }
 
@@ -126,6 +138,8 @@ class CustomerController {
         (new \App\Models\Log())->addAction('create_customer', \App\Core\Auth::user()['id'] ?? null, ['note'=>'import '.$created.' items']);
       }
     }
+    \App\Services\ViewCardService::refreshCustomers();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/customers');
   }
 }

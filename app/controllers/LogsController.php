@@ -1,6 +1,7 @@
 <?php
 namespace App\Controllers;
 use App\Core\Auth;
+use App\Core\CSRF;
 use App\Core\Helpers;
 use App\Models\Log;
 class LogsController {
@@ -10,6 +11,28 @@ class LogsController {
     $m = new Log();
     $access = $m->accessLogs();
     $actions = $m->actionLogs();
-    Helpers::view('logs/index', ['title'=>'Logs','access'=>$access,'actions'=>$actions]);
+    $lenAccess = isset($_GET['len_access']) ? (strtolower(strval($_GET['len_access']))==='all' ? -1 : (int)$_GET['len_access']) : 10;
+    $lenActions = isset($_GET['len_actions']) ? (strtolower(strval($_GET['len_actions']))==='all' ? -1 : (int)$_GET['len_actions']) : 10;
+    if ($lenAccess === 0) $lenAccess = 10;
+    if ($lenActions === 0) $lenActions = 10;
+    Helpers::view('logs/index', ['title'=>'Logs','access'=>$access,'actions'=>$actions,'len_access'=>$lenAccess,'len_actions'=>$lenActions]);
+  }
+  public function clearAccess() {
+    Auth::require();
+    if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
+    if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
+    $pdo = \App\Core\DB::conn();
+    $pdo->exec('DELETE FROM access_logs');
+    Helpers::addFlash('success', 'Logs accessi svuotati');
+    Helpers::redirect('/logs');
+  }
+  public function clearActions() {
+    Auth::require();
+    if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
+    if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
+    $pdo = \App\Core\DB::conn();
+    $pdo->exec('DELETE FROM action_logs');
+    Helpers::addFlash('success', 'Log azioni svuotati');
+    Helpers::redirect('/logs');
   }
 }

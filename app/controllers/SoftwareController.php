@@ -9,10 +9,27 @@ class SoftwareController {
     Auth::require();
     $items = (new Software())->all();
     $pdo = \App\Core\DB::conn();
-    $total = (int)$pdo->query('SELECT COUNT(*) c FROM software')->fetch()['c'];
-    $free = (int)$pdo->query("SELECT COUNT(*) c FROM software WHERE cost IS NULL OR cost=0 OR LOWER(COALESCE(license,'')) LIKE 'free%'")->fetch()['c'];
-    $paid = (int)$pdo->query("SELECT COUNT(*) c FROM software WHERE cost IS NOT NULL AND cost > 0")->fetch()['c'];
-    $summary = ['total'=>$total,'free'=>$free,'paid'=>$paid];
+    $stmt = $pdo->prepare('SELECT metric, value FROM view_cards WHERE scope=?');
+    $stmt->execute(['software']);
+    $rows = $stmt->fetchAll();
+    if (!$rows) {
+      \App\Services\ViewCardService::refreshSoftware();
+      $stmt->execute(['software']);
+      $rows = $stmt->fetchAll();
+    }
+    if (!$rows) {
+      $rows = [];
+    }
+    $m = [];
+    foreach ($rows as $r) { $m[$r['metric']] = (int)$r['value']; }
+    if (!isset($m['total']) || !isset($m['free']) || !isset($m['paid'])) {
+      \App\Services\ViewCardService::refreshSoftware();
+      $stmt->execute(['software']);
+      $rows = $stmt->fetchAll();
+      $m = [];
+      foreach ($rows as $r) { $m[$r['metric']] = (int)$r['value']; }
+    }
+    $summary = ['total'=>$m['total'] ?? 0,'free'=>$m['free'] ?? 0,'paid'=>$m['paid'] ?? 0];
     Helpers::view('software/index', ['title'=>'Software','items'=>$items,'summary'=>$summary]);
   }
   public function createForm() {
@@ -31,6 +48,7 @@ class SoftwareController {
     ];
     $id = (new Software())->create($data);
     (new \App\Models\Log())->addAction('create_software', \App\Core\Auth::user()['id'] ?? null, ['note'=>$data['name'].' '.$data['version']]);
+    \App\Services\ViewCardService::refreshSoftware();
     Helpers::redirect('/software/'.$id.'/edit');
   }
   public function editForm($id) {
@@ -50,6 +68,7 @@ class SoftwareController {
     ];
     (new Software())->update($id, $data);
     (new \App\Models\Log())->addAction('update_software', \App\Core\Auth::user()['id'] ?? null, ['note'=>$data['name'].' '.$data['version']]);
+    \App\Services\ViewCardService::refreshSoftware();
     Helpers::redirect('/software');
   }
   public function delete($id) {
@@ -57,6 +76,7 @@ class SoftwareController {
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
     (new Software())->delete($id);
     (new \App\Models\Log())->addAction('delete_software', \App\Core\Auth::user()['id'] ?? null, ['note'=>strval($id)]);
+    \App\Services\ViewCardService::refreshSoftware();
     Helpers::redirect('/software');
   }
 }

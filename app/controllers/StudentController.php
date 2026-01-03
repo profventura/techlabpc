@@ -17,10 +17,17 @@ class StudentController {
     $students = (new Student())->all($filters);
     $groups = (new \App\Models\WorkGroup())->all();
     $pdo = \App\Core\DB::conn();
-    $students_total = (int)$pdo->query('SELECT COUNT(*) c FROM students')->fetch()['c'];
-    $leaders_total = (int)$pdo->query("SELECT COUNT(DISTINCT student_id) c FROM group_members WHERE role='leader'")->fetch()['c'];
-    $installers_total = (int)$pdo->query("SELECT COUNT(DISTINCT student_id) c FROM group_members WHERE role='installer'")->fetch()['c'];
-    $summary = ['students'=>$students_total,'leaders'=>$leaders_total,'installers'=>$installers_total];
+    $stmt = $pdo->prepare('SELECT metric, value FROM view_cards WHERE scope=?');
+    $stmt->execute(['students']);
+    $rows = $stmt->fetchAll();
+    if (!$rows) {
+      \App\Services\ViewCardService::refreshStudents();
+      $stmt->execute(['students']);
+      $rows = $stmt->fetchAll();
+    }
+    $m = [];
+    foreach ($rows as $r) { $m[$r['metric']] = (int)$r['value']; }
+    $summary = ['students'=>$m['students'] ?? 0,'leaders'=>$m['leaders'] ?? 0,'installers'=>$m['installers'] ?? 0];
     Helpers::view('students/index', ['title'=>'Studenti','students'=>$students,'filters'=>$filters,'groups'=>$groups,'summary'=>$summary]);
   }
   public function createForm() {
@@ -46,6 +53,8 @@ class StudentController {
     }
     (new Student())->create($data);
     (new \App\Models\Log())->addAction('create_student', \App\Core\Auth::user()['id'] ?? null, ['note'=>$data['email']]);
+    \App\Services\ViewCardService::refreshStudents();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/students');
   }
   public function editForm($id) {
@@ -68,6 +77,8 @@ class StudentController {
     ];
     (new Student())->update($id,$data);
     (new \App\Models\Log())->addAction('update_student', \App\Core\Auth::user()['id'] ?? null, ['note'=>$data['email']]);
+    \App\Services\ViewCardService::refreshStudents();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/students');
   }
   public function delete($id) {
@@ -76,6 +87,8 @@ class StudentController {
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
     (new Student())->delete($id);
     (new \App\Models\Log())->addAction('delete_student', \App\Core\Auth::user()['id'] ?? null, ['note'=>strval($id)]);
+    \App\Services\ViewCardService::refreshStudents();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/students');
   }
 
@@ -153,6 +166,8 @@ class StudentController {
         if ($errors) { \App\Core\Helpers::addFlash('danger', 'Errori: '.implode(' | ', $errors)); }
       }
     }
+    \App\Services\ViewCardService::refreshStudents();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/students');
   }
 }

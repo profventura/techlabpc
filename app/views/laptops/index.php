@@ -96,12 +96,13 @@
     var $ = window.jQuery;
     $('#laptopsTable').DataTable({
       responsive: true,
-      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      pageLength: 10,
+      lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
       order: [],
       columnDefs: [
         { targets: -1, orderable: false, searchable: false }
       ],
-      dom: 'Bfrtip',
+      dom: 'B<"d-flex justify-content-end align-items-center"f>rt<"d-flex justify-content-between align-items-center mt-2"l i p>',
       buttons: [
         { extend: 'copy', text: 'Copia', className: 'btn btn-outline-primary' },
         { extend: 'csv', text: 'CSV', className: 'btn btn-outline-primary' },

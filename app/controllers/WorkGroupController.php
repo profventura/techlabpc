@@ -11,10 +11,17 @@ class WorkGroupController {
     Auth::require();
     $groups = (new WorkGroup())->all();
     $pdo = \App\Core\DB::conn();
-    $groups_total = count($groups);
-    $students_total = (int)$pdo->query('SELECT COUNT(*) c FROM group_members')->fetch()['c'];
-    $laptops_total = (int)$pdo->query('SELECT COUNT(*) c FROM laptops WHERE group_id IS NOT NULL')->fetch()['c'];
-    $summary = ['groups'=>$groups_total,'students'=>$students_total,'laptops'=>$laptops_total];
+    $stmt = $pdo->prepare('SELECT metric, value FROM view_cards WHERE scope=?');
+    $stmt->execute(['groups']);
+    $rows = $stmt->fetchAll();
+    if (!$rows) {
+      \App\Services\ViewCardService::refreshGroups();
+      $stmt->execute(['groups']);
+      $rows = $stmt->fetchAll();
+    }
+    $m = [];
+    foreach ($rows as $r) { $m[$r['metric']] = (int)$r['value']; }
+    $summary = ['groups'=>$m['groups'] ?? count($groups),'students'=>$m['students'] ?? 0,'laptops'=>$m['laptops'] ?? 0];
     Helpers::view('work_groups/index', ['title'=>'Gruppi','groups'=>$groups,'summary'=>$summary]);
   }
   public function show($id) {
@@ -38,6 +45,8 @@ class WorkGroupController {
     $id = (new WorkGroup())->create(['name'=>trim($_POST['name'] ?? ''),'leader_student_id'=>$_POST['leader_student_id']]);
     (new WorkGroup())->setLeader($id, $_POST['leader_student_id']);
     (new \App\Models\Log())->addAction('create_group', \App\Core\Auth::user()['id'] ?? null, ['group_id'=>$id, 'note'=>trim($_POST['name'] ?? '')]);
+    \App\Services\ViewCardService::refreshGroups();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/work-groups/'.$id);
   }
   public function editForm($id) {
@@ -54,6 +63,8 @@ class WorkGroupController {
     (new WorkGroup())->update($id,['name'=>trim($_POST['name'] ?? ''),'leader_student_id'=>$_POST['leader_student_id']]);
     (new WorkGroup())->setLeader($id, $_POST['leader_student_id']);
     (new \App\Models\Log())->addAction('update_group', \App\Core\Auth::user()['id'] ?? null, ['group_id'=>$id, 'note'=>trim($_POST['name'] ?? '')]);
+    \App\Services\ViewCardService::refreshGroups();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/work-groups/'.$id);
   }
   public function addMember($id) {
@@ -75,6 +86,9 @@ class WorkGroupController {
       $wg->addMember($id, $_POST['student_id'], $role);
       (new \App\Models\Log())->addAction('assign_member_to_group', \App\Core\Auth::user()['id'] ?? null, ['group_id'=>$id, 'note'=>$role.' '.$_POST['student_id']]);
     }
+    \App\Services\ViewCardService::refreshGroups();
+    \App\Services\ViewCardService::refreshStudents();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/work-groups/'.$id);
   }
   public function removeMember($id) {
@@ -90,6 +104,9 @@ class WorkGroupController {
     }
     $wg->removeMember($id,$sid);
     (new \App\Models\Log())->addAction('remove_member_from_group', \App\Core\Auth::user()['id'] ?? null, ['group_id'=>$id, 'note'=>strval($sid)]);
+    \App\Services\ViewCardService::refreshGroups();
+    \App\Services\ViewCardService::refreshStudents();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/work-groups/'.$id);
   }
   public function export() {
@@ -143,6 +160,9 @@ class WorkGroupController {
         (new \App\Models\Log())->addAction('create_group', \App\Core\Auth::user()['id'] ?? null, ['note'=>'import '.$created.' items']);
       }
     }
+    \App\Services\ViewCardService::refreshGroups();
+    \App\Services\ViewCardService::refreshStudents();
+    \App\Services\ViewCardService::refreshDashboard();
     Helpers::redirect('/work-groups');
   }
 }

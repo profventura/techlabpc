@@ -11,10 +11,17 @@ class PaymentController {
     if (!Auth::isAdmin()) { Helpers::redirect('/'); return; }
     $payments = (new PaymentTransfer())->all();
     $pdo = \App\Core\DB::conn();
-    $pcs_paid = (int)$pdo->query("SELECT COALESCE(SUM(pcs_paid_count),0) AS t FROM payment_transfers WHERE status='verified'")->fetch()['t'];
-    $customers_cnt = (int)$pdo->query("SELECT COUNT(DISTINCT customer_id) AS c FROM payment_transfers WHERE status='verified'")->fetch()['c'];
-    $pcs_requested = (int)$pdo->query("SELECT COALESCE(SUM(pc_requested_count),0) AS t FROM customers")->fetch()['t'];
-    $summary = ['pcs_paid'=>$pcs_paid,'customers'=>$customers_cnt,'pcs_requested'=>$pcs_requested];
+    $stmt = $pdo->prepare('SELECT metric, value FROM view_cards WHERE scope=?');
+    $stmt->execute(['payments']);
+    $rows = $stmt->fetchAll();
+    if (!$rows) {
+      \App\Services\ViewCardService::refreshPayments();
+      $stmt->execute(['payments']);
+      $rows = $stmt->fetchAll();
+    }
+    $m = [];
+    foreach ($rows as $r) { $m[$r['metric']] = (int)$r['value']; }
+    $summary = ['pcs_paid'=>$m['pcs_paid'] ?? 0,'customers'=>$m['customers'] ?? 0,'pcs_requested'=>$m['pcs_requested'] ?? 0];
     Helpers::view('payments/index', ['title'=>'Pagamenti','payments'=>$payments,'summary'=>$summary]);
   }
   public function createForm() {
@@ -40,6 +47,8 @@ class PaymentController {
     ];
     (new PaymentTransfer())->create($data);
     (new \App\Models\Log())->addAction('create_payment', \App\Core\Auth::user()['id'] ?? null, ['customer_id'=>$_POST['customer_id'] ?? null, 'note'=>($_POST['amount'].' '.$_POST['paid_at'].' pcs '.$data['pcs_paid_count'])]);
+    \App\Services\ViewCardService::refreshPayments();
+    \App\Services\ViewCardService::refreshCustomers();
     Helpers::redirect('/payments');
   }
   public function editForm($id) {
@@ -76,6 +85,8 @@ class PaymentController {
     ];
     $model->update($id, $data);
     (new \App\Models\Log())->addAction('update_payment', \App\Core\Auth::user()['id'] ?? null, ['customer_id'=>$_POST['customer_id'] ?? null, 'note'=>($_POST['amount'].' '.$_POST['paid_at'].' pcs '.$data['pcs_paid_count'])]);
+    \App\Services\ViewCardService::refreshPayments();
+    \App\Services\ViewCardService::refreshCustomers();
     Helpers::redirect('/payments');
   }
   public function delete($id) {
@@ -90,6 +101,8 @@ class PaymentController {
     }
     $model->delete($id);
     (new \App\Models\Log())->addAction('delete_payment', \App\Core\Auth::user()['id'] ?? null, ['note'=>strval($id)]);
+    \App\Services\ViewCardService::refreshPayments();
+    \App\Services\ViewCardService::refreshCustomers();
     Helpers::redirect('/payments');
   }
 }

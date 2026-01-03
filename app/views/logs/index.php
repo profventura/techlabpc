@@ -1,6 +1,12 @@
 <h3 class="mb-3">Logs</h3>
+<?php if (\App\Core\Auth::isAdmin()) { ?>
+<div class="d-flex justify-content-end mb-3 gap-2">
+  <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#clearAccessLogsModal">Svuota logs accessi</button>
+  <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#clearActionLogsModal">Svuota log Azioni</button>
+</div>
+<?php } ?>
 <div class="row">
-  <div class="col-lg-6">
+  <div class="col-lg-12">
     <div class="card">
       <div class="card-body">
         <h5 class="card-title fw-semibold mb-3">Accessi</h5>
@@ -16,14 +22,14 @@
                   <td><?php echo htmlspecialchars($a['ip']??''); ?></td>
                 </tr>
               <?php } ?>
-              <?php if (empty($access)) { ?><tr><td colspan="4">Nessun log accessi</td></tr><?php } ?>
+              <?php if (empty($access)) { ?><tr><td class="text-muted">Nessun log accessi</td><td></td><td></td><td></td></tr><?php } ?>
             </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
-  <div class="col-lg-6">
+  <div class="col-lg-12">
     <div class="card">
       <div class="card-body">
         <h5 class="card-title fw-semibold mb-3">Azioni</h5>
@@ -42,7 +48,7 @@
                   <td><?php echo htmlspecialchars($l['note']??''); ?></td>
                 </tr>
               <?php } ?>
-              <?php if (empty($actions)) { ?><tr><td colspan="7">Nessun log azioni</td></tr><?php } ?>
+              <?php if (empty($actions)) { ?><tr><td class="text-muted">Nessun log azioni</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><?php } ?>
             </tbody>
           </table>
         </div>
@@ -56,9 +62,10 @@
     var $ = window.jQuery;
     $('#accessLogsTable').DataTable({
       responsive: true,
-      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      pageLength: <?php echo (isset($len_access) && (int)$len_access !== 0 ? (int)$len_access : 10); ?>,
+      lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
       order: [],
-      dom: 'Bfrtip',
+      dom: 'B<"d-flex justify-content-end align-items-center"f>rt<"d-flex justify-content-between align-items-center mt-2"l i p>',
       buttons: [
         { extend: 'copy', text: 'Copia', className: 'btn btn-outline-primary' },
         { extend: 'csv', text: 'CSV', className: 'btn btn-outline-primary' },
@@ -90,9 +97,10 @@
     lsel1.attr({ id: lid1, name: lid1, 'aria-label': 'Numero righe' });
     $('#actionLogsTable').DataTable({
       responsive: true,
-      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      pageLength: <?php echo (isset($len_actions) && (int)$len_actions !== 0 ? (int)$len_actions : 10); ?>,
+      lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
       order: [],
-      dom: 'Bfrtip',
+      dom: 'B<"d-flex justify-content-end align-items-center"f>rt<"d-flex justify-content-between align-items-center mt-2"l i p>',
       buttons: [
         { extend: 'copy', text: 'Copia', className: 'btn btn-outline-primary' },
         { extend: 'csv', text: 'CSV', className: 'btn btn-outline-primary' },
@@ -124,4 +132,46 @@
     lsel2.attr({ id: lid2, name: lid2, 'aria-label': 'Numero righe' });
   });
 </script>
+<?php if (\App\Core\Auth::isAdmin()) { ?>
+<div class="modal fade" id="clearAccessLogsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="<?php echo \App\Core\Helpers::url('/logs/clear-access'); ?>" method="post">
+        <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
+        <div class="modal-header">
+          <h5 class="modal-title">Conferma svuotamento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Svuotare tutti i logs di accesso?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="submit" class="btn btn-danger">Svuota</button>
+        </div>
+      </form>
+    </div>
+  </div>
+ </div>
+<div class="modal fade" id="clearActionLogsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="<?php echo \App\Core\Helpers::url('/logs/clear-actions'); ?>" method="post">
+        <input type="hidden" name="csrf" value="<?php echo \App\Core\CSRF::token(); ?>">
+        <div class="modal-header">
+          <h5 class="modal-title">Conferma svuotamento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Svuotare tutti i log azioni?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="submit" class="btn btn-danger">Svuota</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<?php } ?>
 

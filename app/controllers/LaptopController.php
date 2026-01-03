@@ -19,10 +19,17 @@ class LaptopController {
     $customers = (new Customer())->all();
     $groups = (new WorkGroup())->all();
     $pdo = \App\Core\DB::conn();
-    $total = (int)$pdo->query('SELECT COUNT(*) c FROM laptops')->fetch()['c'];
-    $ready = (int)$pdo->query("SELECT COUNT(*) c FROM laptops WHERE status='ready'")->fetch()['c'];
-    $in_work = $total - $ready;
-    $summary = ['total'=>$total,'ready'=>$ready,'in_work'=>$in_work];
+    $stmt = $pdo->prepare('SELECT metric, value FROM view_cards WHERE scope=?');
+    $stmt->execute(['laptops']);
+    $rows = $stmt->fetchAll();
+    if (!$rows) {
+      \App\Services\ViewCardService::refreshLaptops();
+      $stmt->execute(['laptops']);
+      $rows = $stmt->fetchAll();
+    }
+    $m = [];
+    foreach ($rows as $r) { $m[$r['metric']] = (int)$r['value']; }
+    $summary = ['total'=>$m['total'] ?? 0,'ready'=>$m['ready'] ?? 0,'in_work'=>$m['in_work'] ?? 0];
     Helpers::view('laptops/index', ['title'=>'Laptops','laptops'=>$laptops,'customers'=>$customers,'groups'=>$groups,'filters'=>$filters,'summary'=>$summary]);
   }
   public function show($id) {
@@ -98,6 +105,10 @@ class LaptopController {
     $model->addStateHistory($id, $actor, null, $data['status'], null);
     $model->logStatusChange($id, $actor, $data['customer_id'] ?? null, $data['group_id'] ?? null, null);
     (new \App\Models\Log())->addAction('create_laptop', \App\Core\Auth::user()['id'] ?? null, ['laptop_id'=>$id, 'customer_id'=>$data['customer_id'] ?? null, 'group_id'=>$data['group_id'] ?? null, 'note'=>$data['code']]);
+    \App\Services\ViewCardService::refreshDashboard();
+    \App\Services\ViewCardService::refreshCustomers();
+    \App\Services\ViewCardService::refreshGroups();
+    \App\Services\ViewCardService::refreshLaptops();
     Helpers::redirect('/laptops/'.$id);
   }
   public function editForm($id) {
@@ -155,13 +166,21 @@ class LaptopController {
       $model->logStatusChange($id, $actor, $existing['customer_id'] ?? null, $existing['group_id'] ?? null, null);
     }
     (new \App\Models\Log())->addAction('update_laptop', \App\Core\Auth::user()['id'] ?? null, ['laptop_id'=>$id, 'customer_id'=>$data['customer_id'] ?? null, 'group_id'=>$data['group_id'] ?? null, 'note'=>$data['code']]);
+    \App\Services\ViewCardService::refreshDashboard();
+    \App\Services\ViewCardService::refreshCustomers();
+    \App\Services\ViewCardService::refreshGroups();
+    \App\Services\ViewCardService::refreshLaptops();
     Helpers::redirect('/laptops/'.$id);
   }
   public function delete($id) {
     Auth::require();
     if (!CSRF::validate($_POST['csrf'] ?? '')) { http_response_code(400); echo 'Bad CSRF'; return; }
+    (new \App\Models\Log())->addAction('delete_laptop', \App\Core\Auth::user()['id'] ?? null, ['laptop_id'=>$id, 'note'=>strval($id)]);
     (new Laptop())->delete($id);
-    (new \App\Models\Log())->addAction('delete_laptop', \App\Core\Auth::user()['id'] ?? null, ['laptop_id'=>$id]);
+    \App\Services\ViewCardService::refreshDashboard();
+    \App\Services\ViewCardService::refreshCustomers();
+    \App\Services\ViewCardService::refreshGroups();
+    \App\Services\ViewCardService::refreshLaptops();
     Helpers::redirect('/laptops');
   }
 
@@ -274,6 +293,10 @@ class LaptopController {
       }
     }
     
+    \App\Services\ViewCardService::refreshDashboard();
+    \App\Services\ViewCardService::refreshCustomers();
+    \App\Services\ViewCardService::refreshGroups();
+    \App\Services\ViewCardService::refreshLaptops();
     Helpers::redirect('/laptops');
   }
 }
